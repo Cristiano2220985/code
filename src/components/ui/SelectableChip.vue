@@ -17,5 +17,5 @@
 defineProps({
   label: { type: String, required: true },
   selected: { type: Boolean, default: false },
-});
+})
 </script>

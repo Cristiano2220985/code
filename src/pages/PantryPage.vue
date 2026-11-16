@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <div class="flex items-center justify-between gap-3">
-      <h1 class="text-xl font-bold md:text-2xl">My Pantry</h1>
+      <h1 data-testid="pantry-title" class="text-xl font-bold md:text-2xl">My Pantry</h1>
       <BaseButton v-if="store.items.length" @click="openItem()">+ Add item</BaseButton>
     </div>
     <p role="status" class="sr-only">{{ announcement }}</p>

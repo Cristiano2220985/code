@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import AppBottomNav from "@/components/layout/AppBottomNav.vue";
-import AppHeader from "@/components/layout/AppHeader.vue";
-import AppSidebar from "@/components/layout/AppSidebar.vue";
+import AppBottomNav from '@/components/layout/AppBottomNav.vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 </script>
