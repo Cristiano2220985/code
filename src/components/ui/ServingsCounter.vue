@@ -10,11 +10,9 @@
     >
       &minus;
     </button>
-    <span
-      data-testid="servings-value"
-      class="w-5 text-center text-sm font-semibold"
-      >{{ servings }}</span
-    >
+    <span data-testid="servings-value" class="w-5 text-center text-sm font-semibold">{{
+      servings
+    }}</span>
     <button
       type="button"
       data-testid="servings-increase"
@@ -29,10 +27,10 @@
 </template>
 
 <script setup>
-const servings = defineModel({ type: Number, required: true });
+const servings = defineModel({ type: Number, required: true })
 
 defineProps({
   min: { type: Number, default: 1 },
   max: { type: Number, default: 20 },
-});
+})
 </script>

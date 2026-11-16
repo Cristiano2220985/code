@@ -11,39 +11,25 @@
       viewBox="0 0 10 10"
       preserveAspectRatio="none"
     >
-      <line
-        x1="0"
-        y1="0"
-        x2="10"
-        y2="10"
-        stroke="currentColor"
-        stroke-width="0.2"
-      />
-      <line
-        x1="10"
-        y1="0"
-        x2="0"
-        y2="10"
-        stroke="currentColor"
-        stroke-width="0.2"
-      />
+      <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="0.2" />
+      <line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="0.2" />
     </svg>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed } from 'vue'
 
 const props = defineProps({
-  label: { type: String, default: "Image" },
-  size: { type: String, default: "md" },
-});
+  label: { type: String, default: 'Image' },
+  size: { type: String, default: 'md' },
+})
 
 const SIZES = {
-  sm: "h-6 w-6",
-  md: "h-10 w-10",
-  lg: "h-14 w-14",
-};
+  sm: 'h-6 w-6',
+  md: 'h-10 w-10',
+  lg: 'h-14 w-14',
+}
 
-const sizeClass = computed(() => SIZES[props.size] ?? SIZES.md);
+const sizeClass = computed(() => SIZES[props.size] ?? SIZES.md)
 </script>

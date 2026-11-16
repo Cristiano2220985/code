@@ -4,7 +4,7 @@
       title="Allergies and exclusions"
       subtitle="Recipes containing these are filtered out."
     />
-
+    <!-- Alergies -->
     <p class="mb-2 text-xs font-semibold text-neutral-900">Food allergies</p>
     <div class="flex flex-wrap gap-2" data-testid="allergy-options">
       <SelectableChip
@@ -17,10 +17,7 @@
       />
     </div>
 
-    <label
-      for="excluded-ingredient"
-      class="mt-6 mb-2 block text-xs font-semibold text-neutral-900"
-    >
+    <label for="excluded-ingredient" class="mt-6 mb-2 block text-xs font-semibold text-neutral-900">
       Excluded ingredients
     </label>
     <form class="flex gap-2" @submit.prevent="addExcluded">
@@ -42,29 +39,23 @@
         Add
       </BaseButton>
     </form>
-    <p
-      v-if="error"
-      data-testid="excluded-ingredient-error"
-      class="mt-1.5 text-xs text-red-600"
-    >
+    <p v-if="error" data-testid="excluded-ingredient-error" class="mt-1.5 text-xs text-red-600">
       {{ error }}
     </p>
 
-    <ul
-      class="mt-3 flex flex-wrap gap-2"
-      data-testid="excluded-ingredient-list"
-    >
+    <ul class="mt-3 flex flex-wrap gap-2" data-testid="excluded-ingredient-list">
       <li
         v-for="ingredient in excludedIngredients"
         :key="ingredient"
+        :data-testid="`excluded-${ingredient}`"
         class="flex items-center gap-1.5 rounded-full border border-neutral-400 px-3.5 py-1.5 text-xs text-neutral-700"
       >
-        <span data-testid="excluded-ingredient">{{ ingredient }}</span>
+        <span>{{ ingredient }}</span>
         <button
           type="button"
           class="text-neutral-400 hover:text-neutral-800"
           :aria-label="`Remove ${ingredient}`"
-          data-testid="excluded-ingredient-remove"
+          :data-testid="`remove-excluded-${ingredient}`"
           @click="removeExcluded(ingredient)"
         >
           &times;
@@ -75,39 +66,34 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import StepHeading from "./StepHeading.vue";
-import BaseButton from "@/components/ui/BaseButton.vue";
-import SelectableChip from "@/components/ui/SelectableChip.vue";
-import { FOOD_ALLERGENS } from "@/constants/profileOptions";
-import { addIngredient, hasIngredient, toggleValue } from "@/utils/profile";
+import { ref } from 'vue'
+import StepHeading from './StepHeading.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import SelectableChip from '@/components/ui/SelectableChip.vue'
+import { FOOD_ALLERGENS } from '@/constants/profileOptions'
+import { addIngredient, hasIngredient, toggleValue } from '@/utils/profile'
 
-const allergies = defineModel("allergies", { type: Array, required: true });
-const excludedIngredients = defineModel("excludedIngredients", {
+const allergies = defineModel('allergies', { type: Array, required: true })
+const excludedIngredients = defineModel('excludedIngredients', {
   type: Array,
   required: true,
-});
+})
 
-const newIngredient = ref("");
-const error = ref("");
+const newIngredient = ref('')
+const error = ref('')
 
 function addExcluded() {
   if (hasIngredient(excludedIngredients.value, newIngredient.value)) {
-    error.value = "This ingredient is already excluded.";
-    return;
+    error.value = 'This ingredient is already excluded.'
+    return
   }
 
-  excludedIngredients.value = addIngredient(
-    excludedIngredients.value,
-    newIngredient.value,
-  );
-  newIngredient.value = "";
-  error.value = "";
+  excludedIngredients.value = addIngredient(excludedIngredients.value, newIngredient.value)
+  newIngredient.value = ''
+  error.value = ''
 }
 
 function removeExcluded(ingredient) {
-  excludedIngredients.value = excludedIngredients.value.filter(
-    (item) => item !== ingredient,
-  );
+  excludedIngredients.value = excludedIngredients.value.filter((item) => item !== ingredient)
 }
 </script>

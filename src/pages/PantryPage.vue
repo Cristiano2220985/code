@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout>
-    <h1 class="text-xl font-bold text-neutral-900">My Pantry</h1>
+    <h1 data-testid="pantry-title" class="text-xl font-bold text-neutral-900">My Pantry</h1>
     <section
       class="mt-6 flex flex-col items-center rounded-xl border border-dashed border-neutral-300 p-10 text-center"
       data-testid="pantry-empty"
@@ -14,5 +14,5 @@
 </template>
 
 <script setup>
-import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import DashboardLayout from '@/layouts/DashboardLayout.vue'
 </script>
