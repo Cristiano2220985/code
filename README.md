@@ -1,6 +1,19 @@
 # SmartPantry
 
-This template should help get you started developing with Vue 3 in Vite.
+Kitchen assistant built with Vue 3, Pinia, Vue Router, Tailwind CSS and Vite.
+
+Household profiles support dietary preferences, allergies and excluded ingredients.
+The pantry supports adding and editing items, custom categories, category filters
+and expiration alerts. Items and categories are shared across profiles and stored
+locally under `smartpantry:pantry`; profiles describe who is eating.
+
+All item fields are required, quantities must be positive (decimals are supported),
+and category names are unique regardless of case. New categories persist even
+when the item form is cancelled. Cancelling an item never saves its edits.
+The “Expiring within 48 hours” tray uses local calendar dates (today and tomorrow);
+expired items appear in a separate tray. Dates are stored as `YYYY-MM-DD`.
+
+Node.js requirement: `^22.18.0 || >=24.12.0`.
 
 ## Recommended IDE Setup
 
