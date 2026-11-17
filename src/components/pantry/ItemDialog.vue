@@ -9,6 +9,7 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="item-dialog-title"
+        data-testid="item-dialog"
         tabindex="-1"
         class="max-h-[95dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:max-w-lg sm:rounded-2xl"
         @keydown="onKeydown"
@@ -20,6 +21,7 @@
           <button
             type="button"
             aria-label="Close item form"
+            data-testid="close-item-dialog-button"
             class="rounded p-2 text-xl hover:bg-neutral-100"
             @click="$emit('close')"
           >
@@ -38,6 +40,7 @@
             <select
               v-if="field.options"
               :id="`item-${field.key}`"
+              :data-testid="field.testId"
               v-model="draft[field.key]"
               class="field"
               :aria-invalid="Boolean(errors[field.key])"
@@ -57,6 +60,7 @@
             <input
               v-else
               :id="`item-${field.key}`"
+              :data-testid="field.testId"
               v-model="draft[field.key]"
               :type="field.type || 'text'"
               :step="field.key === 'quantity' ? 'any' : undefined"
@@ -83,12 +87,15 @@
               <div class="flex gap-2">
                 <input
                   id="new-category"
+                  data-testid="new-category-input"
                   v-model="newCategory"
                   class="field min-w-0 flex-1"
                   placeholder="e.g. Sauces"
                   :aria-invalid="Boolean(categoryError)"
                   @keydown.enter.prevent="addCategory"
-                /><BaseButton @click="addCategory">Add</BaseButton>
+                /><BaseButton data-testid="add-category-button" @click="addCategory"
+                  >Add</BaseButton
+                >
               </div>
               <p v-if="categoryError" role="alert" class="mt-1 text-xs text-red-700">
                 {{ categoryError }}
@@ -102,11 +109,18 @@
             {{ saveError }}
           </p>
           <div class="col-span-2 flex gap-3 pt-3">
-            <BaseButton variant="secondary" class="flex-1" @click="$emit('close')"
+            <BaseButton
+              variant="secondary"
+              class="flex-1"
+              data-testid="cancel-button"
+              @click="$emit('close')"
               >Cancel</BaseButton
-            ><BaseButton type="submit" class="flex-[2]">{{
-              item ? 'Save changes' : 'Save item'
-            }}</BaseButton>
+            ><BaseButton
+              type="submit"
+              class="flex-[2]"
+              :data-testid="item ? 'save-changes-button' : 'save-item-button'"
+              >{{ item ? 'Save changes' : 'Save item' }}</BaseButton
+            >
           </div>
         </form>
       </section>
@@ -131,11 +145,22 @@ const draft = reactive({
   ...props.item,
 })
 const fields = computed(() => [
-  { key: 'name', label: 'Item name', placeholder: 'e.g. Pesto sauce' },
-  { key: 'category', label: 'Category', options: store.categories },
-  { key: 'quantity', label: 'Quantity', type: 'number', placeholder: '0' },
-  { key: 'unit', label: 'Unit', options: PANTRY_UNITS },
-  { key: 'expirationDate', label: 'Expiration date', type: 'date' },
+  { key: 'name', label: 'Item name', testId: 'item-name-input', placeholder: 'e.g. Pesto sauce' },
+  { key: 'category', label: 'Category', testId: 'category-select', options: store.categories },
+  {
+    key: 'quantity',
+    label: 'Quantity',
+    testId: 'quantity-input',
+    type: 'number',
+    placeholder: '0',
+  },
+  { key: 'unit', label: 'Unit', testId: 'unit-select', options: PANTRY_UNITS },
+  {
+    key: 'expirationDate',
+    label: 'Expiration date',
+    testId: 'expiration-date-input',
+    type: 'date',
+  },
 ])
 const errors = ref({})
 const dialog = ref(null)

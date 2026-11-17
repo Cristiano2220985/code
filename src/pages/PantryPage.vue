@@ -2,7 +2,9 @@
   <DashboardLayout>
     <div class="flex items-center justify-between gap-3">
       <h1 data-testid="pantry-title" class="text-xl font-bold md:text-2xl">My Pantry</h1>
-      <BaseButton v-if="store.items.length" @click="openItem()">+ Add item</BaseButton>
+      <BaseButton v-if="store.items.length" data-testid="add-item-button" @click="openItem()"
+        >+ Add item</BaseButton
+      >
     </div>
     <p role="status" class="sr-only">{{ announcement }}</p>
     <section
@@ -15,7 +17,9 @@
       <p class="mt-2 max-w-xs text-sm text-neutral-500">
         Add your first item to start tracking quantities and expiration dates.
       </p>
-      <BaseButton class="mt-6" @click="openItem()">+ Add item</BaseButton>
+      <BaseButton class="mt-6" data-testid="add-item-button" @click="openItem()"
+        >+ Add item</BaseButton
+      >
     </section>
     <template v-else>
       <section
@@ -23,6 +27,7 @@
         :key="tray.title"
         class="mt-5 rounded-xl border border-neutral-700 bg-neutral-50 p-4"
         :aria-label="tray.title"
+        :data-testid="tray.testId"
       >
         <div class="flex justify-between gap-3 text-sm font-semibold">
           <h2>ⓘ {{ tray.title }}</h2>
@@ -35,6 +40,7 @@
             type="button"
             class="min-w-40 rounded-lg border border-neutral-300 bg-white p-3 text-left hover:border-neutral-800"
             :aria-label="`Edit ${item.name}`"
+            :data-testid="`${tray.testId}-item-${item.name}`"
             @click="openItem(item)"
           >
             <span class="block text-sm font-semibold">{{ item.name }}</span
@@ -79,6 +85,8 @@
               class="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border bg-white p-3 text-left hover:bg-neutral-50 md:grid-cols-[2fr_1fr_1fr_1fr_1rem] md:gap-4"
               :class="days(item) <= 1 ? 'border-neutral-700' : 'border-neutral-300'"
               :aria-label="`Edit ${item.name}, ${item.quantity} ${item.unit}, ${label(item)}`"
+              :data-testid="`pantry-item-${item.name}`"
+              :data-highlighted="days(item) <= 1"
               @click="openItem(item)"
             >
               <span class="flex min-w-0 items-center gap-3 text-sm font-semibold"
@@ -92,7 +100,7 @@
               }}</span>
               <span
                 class="col-start-1 row-start-2 text-xs text-neutral-500 md:col-auto md:row-auto md:text-sm"
-                >{{ item.quantity }}
+                ><span :data-testid="`pantry-item-quantity-${item.name}`">{{ item.quantity }}</span>
                 {{ item.unit === 'units' && item.quantity === 1 ? 'unit' : item.unit }}</span
               >
               <span
@@ -142,9 +150,14 @@ const filteredItems = computed(() =>
 )
 const alertTrays = computed(() =>
   [
-    { title: 'Expired items', items: store.items.filter((item) => days(item) < 0) },
+    {
+      title: 'Expired items',
+      testId: 'expired-tray',
+      items: store.items.filter((item) => days(item) < 0),
+    },
     {
       title: 'Expiring within 48 hours',
+      testId: 'expiring-tray',
       items: store.items.filter((item) => days(item) >= 0 && days(item) <= 1),
     },
   ].filter((tray) => tray.items.length),
