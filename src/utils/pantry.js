@@ -1,5 +1,7 @@
-export const DEFAULT_CATEGORIES = ['Dairy', 'Vegetables', 'Meat', 'Fruit', 'Frozen']
+export const DEFAULT_CATEGORIES = ['Dairy', 'Vegetables', 'Meat', 'Fruit', 'Frozen', 'Sweets']
 export const PANTRY_UNITS = ['g', 'kg', 'mL', 'L', 'units']
+// Text shown in the unit <select>; the saved value stays the same.
+export const UNIT_LABELS = { units: 'Units' }
 
 export function dateKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`

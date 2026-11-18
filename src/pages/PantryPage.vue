@@ -79,7 +79,7 @@
           <span>Item</span><span>Category</span><span>Quantity</span><span>Expires</span><span />
         </div>
         <ul class="space-y-2" aria-label="Pantry items">
-          <li v-for="item in filteredItems" :key="item.id">
+          <li v-for="item in filteredItems" :key="item.id" data-testid="pantry-item-card">
             <button
               type="button"
               class="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border bg-white p-3 text-left hover:bg-neutral-50 md:grid-cols-[2fr_1fr_1fr_1fr_1rem] md:gap-4"
@@ -92,6 +92,7 @@
               <span class="flex min-w-0 items-center gap-3 text-sm font-semibold"
                 ><ImagePlaceholder :label="item.name" class="hidden md:block" /><span
                   class="break-words"
+                  data-testid="pantry-item-name"
                   >{{ item.name }}</span
                 ></span
               >

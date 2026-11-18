@@ -4,7 +4,7 @@
     <AppSidebar />
     <div class="flex min-w-0 flex-1 flex-col">
       <AppHeader />
-      <main class="flex-1 p-4 pb-24 md:p-6">
+      <main class="flex-1 p-4 pb-24 md:p-6" data-testid="dashboard-screen">
         <slot />
       </main>
     </div>
