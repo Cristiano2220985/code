@@ -75,6 +75,22 @@ product is not found, the user can upload an image or enter the item manually.
 
 Test barcodes: `3017620422003` (Nutella, 400 g) and `0000000000000` (not found).
 
+## US-09: Grocery shopping list
+
+The shopping list opens from the cart button in the header. Items are added by name
+and stored locally under `smartpantry:shopping-list`.
+
+When an item is bought it can be:
+
+- **scanned**: the camera button of the item opens the scanner (live camera or typed
+  barcode number). The item is checked and keeps the quantity and unit of the product;
+- **checked** by hand.
+
+**Move to pantry** asks the category, quantity, unit and expiration date of every
+checked item (scanned items already come with the quantity and unit). After
+**Confirm** the items are added to the pantry and removed from the list; unchecked
+items stay on the list.
+
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
