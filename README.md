@@ -59,6 +59,27 @@ barcode number can always be typed.
 npm run build
 ```
 
+## Install and use offline
+
+The production build includes an installable PWA. Run `npm run build` followed
+by `npm run preview` and open the localhost URL. To test on a phone, serve
+`dist/` from an HTTPS host. Configure the host to serve `index.html` for app
+routes such as `/pantry` and `/onboarding`, and serve `sw.js` as JavaScript.
+
+- Visit SmartPantry once with a connection so the service worker can download
+  the application. In browsers that offer an installation prompt, use
+  **Install app** or the browser menu. On iPhone, use Safari's share menu and
+  select **Add to Home Screen**.
+- After the download completes, you can reopen the app and manage profiles,
+  pantry items, and the shopping list offline. Changes are saved on the device.
+  Try reloading `/pantry` with the network disabled, then add an item and
+  reload again to verify it was saved.
+- Barcode lookup works offline for the built-in catalogue and previously found
+  products. A barcode outside those catalogues needs an internet connection.
+- After deploying a new version, close all SmartPantry tabs and app windows to
+  let the newly downloaded version take over. The service worker is enabled
+  for production builds, including `npm run preview`.
+
 ## US-08: Product insertion and lookup
 
 In **+ Add item → Scan barcode** a barcode can be read in three ways:
@@ -67,11 +88,11 @@ In **+ Add item → Scan barcode** a barcode can be read in three ways:
 2. **Type the number**: "Or type the barcode number" field + **Look up**.
 3. **Upload image**: choose a photo of the barcode (JPG or PNG).
 
-The product is searched in a small local catalogue first (works offline) and then
-in [Open Food Facts](https://world.openfoodfacts.org), a free public product database
-(needs internet). When it is found, the item name, quantity and unit are filled in
-and can still be changed before saving. When the camera is not available or the
-product is not found, the user can upload an image or enter the item manually.
+The product is searched in the built-in and saved catalogues first (both work
+offline) and then in [Open Food Facts](https://world.openfoodfacts.org), a free
+public product database. When it is found, the item name, quantity and unit are
+filled in and can still be changed before saving. When the camera is unavailable
+or the lookup fails, the user can upload an image or enter the item manually.
 
 Test barcodes: `3017620422003` (Nutella, 400 g) and `0000000000000` (not found).
 
