@@ -30,37 +30,17 @@
         Scanning for <strong>{{ itemName }}</strong>
       </p>
 
-      <div
-        v-if="state === 'camera-unavailable' || state === 'not-found'"
-        class="flex flex-col items-center py-4 text-center"
-      >
+      <div v-if="problem" class="flex flex-col items-center py-4 text-center">
         <span
           class="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-400 text-lg font-bold"
           aria-hidden="true"
           >!</span
         >
-        <p
-          v-if="state === 'camera-unavailable'"
-          role="alert"
-          class="mt-3 text-base font-bold"
-          data-testid="barcode-camera-unavailable-message"
-        >
-          Camera access is not available
-        </p>
-        <p
-          v-else
-          role="alert"
-          class="mt-3 text-base font-bold"
-          data-testid="barcode-product-not-found-message"
-        >
-          Product not found
+        <p role="alert" class="mt-3 text-base font-bold" :data-testid="`barcode-${state}-message`">
+          {{ problem.title }}
         </p>
         <p class="mt-1 max-w-xs text-xs text-neutral-500">
-          {{
-            state === 'camera-unavailable'
-              ? 'You can type the barcode number below, or go back and tick the item.'
-              : 'Try another barcode, or go back and tick the item.'
-          }}
+          {{ problem.description }}
         </p>
       </div>
 
@@ -144,7 +124,6 @@ const reader = new BrowserMultiFormatReader(
   ]),
 )
 
-// 'starting' | 'scanning' | 'searching' | 'camera-unavailable' | 'not-found'
 const state = ref('starting')
 const video = ref(null)
 const typedCode = ref('')
@@ -153,6 +132,21 @@ const searching = ref(false)
 let cameraControls = null
 let closed = false
 
+const problems = {
+  'camera-unavailable': {
+    title: 'Camera access is not available',
+    description: 'You can type the barcode number below, or go back and tick the item.',
+  },
+  'product-not-found': {
+    title: 'Product not found',
+    description: 'Try another barcode, or go back and tick the item.',
+  },
+  'lookup-unavailable': {
+    title: 'Online product lookup is unavailable',
+    description: 'Check your connection and try again, or go back and tick the item.',
+  },
+}
+const problem = computed(() => problems[state.value])
 const statusMessage = computed(
   () =>
     ({
@@ -191,15 +185,20 @@ function stopCamera() {
 }
 
 async function lookup(code) {
-  if (searching.value) return
+  if (closed || searching.value) return
   searching.value = true
   stopCamera()
   state.value = 'searching'
-  const product = await findProductByBarcode(code)
-  searching.value = false
-  if (closed) return
-  if (product) emit('found', { ...product, barcode: code })
-  else state.value = 'not-found'
+  try {
+    const product = await findProductByBarcode(code)
+    if (closed) return
+    if (product) emit('found', { ...product, barcode: code })
+    else state.value = 'product-not-found'
+  } catch {
+    if (!closed) state.value = 'lookup-unavailable'
+  } finally {
+    searching.value = false
+  }
 }
 
 function lookupTypedCode() {
