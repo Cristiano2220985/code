@@ -2,7 +2,7 @@
 
 export const NAV_ITEMS = [
   { label: 'Pantry', routeName: 'pantry', testId: 'nav-pantry' },
-  { label: 'Recipes', routeName: null, testId: 'nav-recipes' },
+  { label: 'Recipes', routeName: 'recipes', testId: 'nav-recipes' },
   { label: 'Book', routeName: null, testId: 'nav-book' },
   { label: 'Settings', routeName: null, testId: 'nav-settings' },
 ]
