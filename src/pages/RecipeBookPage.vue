@@ -97,9 +97,26 @@
           class="mt-4 grid gap-4 md:grid-cols-2"
         >
           <li v-for="recipe in collectionRecipes" :key="recipe.id">
-            <BookRecipeCard :recipe="recipe" note="In this collection" @open="openRecipe" />
+            <BookRecipeCard :recipe="recipe" note="In this collection" @open="openRecipe">
+              <template #actions>
+                <button
+                  type="button"
+                  data-testid="recipe-book-remove-from-collection-button"
+                  class="rounded-lg border border-neutral-400 px-3 py-1.5 font-semibold text-neutral-900 hover:bg-neutral-100"
+                  @click="removeFromCollection(recipe)"
+                >
+                  ✕ Remove
+                </button>
+              </template>
+            </BookRecipeCard>
           </li>
         </ul>
+        <p
+          v-if="collectionRecipes.length"
+          class="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
+        >
+          ⓘ Removing a recipe from a collection does not delete it from All saved recipes.
+        </p>
       </section>
 
       <section v-else class="mt-6" aria-labelledby="book-saved-title">
@@ -226,6 +243,12 @@ function onAdded(collection) {
   adding.value = null
   showSection(collection.id)
   statusMessage.value = `${recipeName} added to ${collection.name}.`
+}
+
+function removeFromCollection(recipe) {
+  const collection = activeCollection.value
+  book.removeFromCollection(collection.id, recipe.id)
+  statusMessage.value = `${recipe.name} removed from ${collection.name}.`
 }
 
 function createFromPicker() {

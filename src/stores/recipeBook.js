@@ -60,5 +60,20 @@ export const useRecipeBookStore = defineStore('recipeBook', () => {
     return collection
   }
 
-  return { recipes, collections, isSaved, saveRecipe, createCollection, addToCollection }
+  // The recipe leaves only this collection; it stays in the Recipe Book.
+  function removeFromCollection(collectionId, recipeId) {
+    const collection = findCollection(collectionId)
+    collection.recipeIds = collection.recipeIds.filter((id) => id !== String(recipeId))
+    persist()
+  }
+
+  return {
+    recipes,
+    collections,
+    isSaved,
+    saveRecipe,
+    createCollection,
+    addToCollection,
+    removeFromCollection,
+  }
 })
