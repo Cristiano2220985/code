@@ -65,11 +65,15 @@ The production build includes an installable PWA. Run `npm run build` followed
 by `npm run preview` and open the localhost URL. To test on a phone, serve
 `dist/` from an HTTPS host. Configure the host to serve `index.html` for app
 routes such as `/pantry` and `/onboarding`, and serve `sw.js` as JavaScript.
+On Vercel, configure the route rewrites in `vercel.json`. Test a deployment that
+includes the PWA changes, using the Vite preset and the `dist/` output directory.
 
 - Visit SmartPantry once with a connection so the service worker can download
-  the application. In browsers that offer an installation prompt, use
-  **Install app** or the browser menu. On iPhone, use Safari's share menu and
-  select **Add to Home Screen**.
+  the application. **Install app** opens the browser's installation prompt or
+  shows the relevant browser menu instructions on mobile and in Safari. On
+  iPhone, leave **Open as Web App** enabled if offered.
+  Open the app from its Home Screen icon while still connected, then test
+  offline from the icon. Safari and the installed app use separate website data.
 - After the download completes, you can reopen the app and manage profiles,
   pantry items, and the shopping list offline. Changes are saved on the device.
   Try reloading `/pantry` with the network disabled, then add an item and
