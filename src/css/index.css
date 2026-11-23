@@ -1,1 +1,13 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+input:not([type='checkbox'], [type='file']),
+select,
+textarea {
+  @apply text-sm;
+
+  /* On iOS, Safari can zoom into focused fields with text smaller than 16px. */
+  @media (any-pointer: coarse), (width < 48rem) {
+    font-size: max(1rem, 16px);
+    line-height: 1.5;
+  }
+}
