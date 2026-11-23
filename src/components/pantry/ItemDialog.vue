@@ -17,8 +17,8 @@
         <BarcodeScanner
           v-if="view === 'scanner'"
           @found="fillFromBarcode"
-          @manual="backToForm"
-          @close="backToForm"
+          @manual="changeView('form')"
+          @close="changeView('form')"
         />
         <template v-else>
           <div class="mb-5 flex items-center justify-between">
@@ -40,7 +40,7 @@
               type="button"
               data-testid="scan-barcode-button"
               class="flex w-full items-center gap-3 rounded-xl border border-neutral-800 p-3 text-left hover:bg-neutral-50"
-              @click="view = 'scanner'"
+              @click="changeView('scanner')"
             >
               <span
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800 text-sm text-white"
@@ -187,6 +187,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 // Loaded only when "Scan barcode" is opened (the barcode library is large).
 const BarcodeScanner = defineAsyncComponent(() => import('@/components/pantry/BarcodeScanner.vue'))
 import { usePantryStore } from '@/stores/pantry'
+import { trapDialogTab } from '@/utils/dialogFocus'
 import { PANTRY_UNITS, UNIT_LABELS, validateItem } from '@/utils/pantry'
 const props = defineProps({ item: { type: Object, default: null } })
 const emit = defineEmits(['close', 'saved'])
@@ -229,25 +230,22 @@ const autoFilled = ref(false)
 let previousFocus, previousOverflow
 
 // US-08: fill the form with the product found by barcode; the user can still change everything.
-async function fillFromBarcode(product) {
+function fillFromBarcode(product) {
   draft.name = product.name
   if (product.quantity) draft.quantity = product.quantity
   if (product.unit) draft.unit = product.unit
   autoFilled.value = true
   errors.value = {}
-  await backToForm()
+  changeView('form')
 }
-async function backToForm() {
-  view.value = 'form'
-  await nextTick()
-  dialog.value.querySelector('#item-name')?.focus()
+function changeView(nextView) {
+  view.value = nextView
+  dialog.value?.focus()
 }
-async function categoryChanged() {
+function categoryChanged() {
   creatingCategory.value = draft.category === CREATE_CATEGORY
   if (creatingCategory.value) {
     draft.category = ''
-    await nextTick()
-    dialog.value.querySelector('#new-category')?.focus()
   }
 }
 function addCategory() {
@@ -261,10 +259,12 @@ function addCategory() {
   }
 }
 async function save() {
+  saveError.value = ''
   errors.value = validateItem(draft, store.categories)
   if (Object.keys(errors.value).length) {
+    saveError.value = 'Please check the highlighted fields.'
     await nextTick()
-    dialog.value.querySelector('[aria-invalid="true"]')?.focus()
+    dialog.value?.querySelector('[aria-invalid="true"]')?.scrollIntoView?.({ block: 'nearest' })
     return
   }
   try {
@@ -278,25 +278,13 @@ function onKeydown(event) {
     event.stopPropagation()
     emit('close')
   }
-  if (event.key !== 'Tab') return
-  const controls = [...dialog.value.querySelectorAll('button, input, select')].filter(
-    (element) => !element.disabled,
-  )
-  const first = controls[0],
-    last = controls.at(-1)
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
+  trapDialogTab(event, dialog.value)
 }
 onMounted(() => {
   previousFocus = document.activeElement
   previousOverflow = document.body.style.overflow
   document.body.style.overflow = 'hidden'
-  dialog.value.querySelector('#item-name')?.focus()
+  dialog.value.focus()
 })
 onBeforeUnmount(() => {
   document.body.style.overflow = previousOverflow

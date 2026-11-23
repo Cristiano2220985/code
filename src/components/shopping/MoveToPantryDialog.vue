@@ -91,7 +91,7 @@
                 :aria-describedby="
                   errors[draft.id]?.[field.key] ? `transfer-${index}-${field.key}-error` : undefined
                 "
-                @change="field.key === 'category' && categoryChanged(draft, index)"
+                @change="field.key === 'category' && categoryChanged(draft)"
               >
                 <option value="" disabled>Select</option>
                 <option
@@ -179,6 +179,7 @@ import { nextTick, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { usePantryStore } from '@/stores/pantry'
 import { useShoppingListStore } from '@/stores/shoppingList'
+import { trapDialogTab } from '@/utils/dialogFocus'
 import { PANTRY_UNITS, UNIT_LABELS, validateItem } from '@/utils/pantry'
 
 const CREATE_CATEGORY = '__smartpantry_create_category__'
@@ -220,12 +221,10 @@ const errors = ref({})
 const saveError = ref('')
 const dialog = ref(null)
 
-async function categoryChanged(draft, index) {
+function categoryChanged(draft) {
   draft.creatingCategory = draft.category === CREATE_CATEGORY
   if (draft.creatingCategory) {
     draft.category = ''
-    await nextTick()
-    dialog.value.querySelector(`#transfer-${index}-new-category`)?.focus()
   }
 }
 function addCategory(draft) {
@@ -241,14 +240,16 @@ function addCategory(draft) {
 }
 
 async function confirm() {
+  saveError.value = ''
   errors.value = Object.fromEntries(
     drafts
       .map((draft) => [draft.id, validateItem(draft, pantry.categories)])
       .filter(([, itemErrors]) => Object.keys(itemErrors).length),
   )
   if (Object.keys(errors.value).length) {
+    saveError.value = 'Please check the highlighted fields.'
     await nextTick()
-    dialog.value.querySelector('[aria-invalid="true"]')?.focus()
+    dialog.value?.querySelector('[aria-invalid="true"]')?.scrollIntoView?.({ block: 'nearest' })
     return
   }
   try {
@@ -273,22 +274,10 @@ function onKeydown(event) {
     event.stopPropagation()
     emit('close')
   }
-  if (event.key !== 'Tab') return
-  const controls = [...dialog.value.querySelectorAll('button, input, select')].filter(
-    (element) => !element.disabled,
-  )
-  const first = controls[0],
-    last = controls.at(-1)
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
+  trapDialogTab(event, dialog.value)
 }
 
-onMounted(() => dialog.value.querySelector('select, input')?.focus())
+onMounted(() => dialog.value.focus())
 </script>
 
 <style scoped>
