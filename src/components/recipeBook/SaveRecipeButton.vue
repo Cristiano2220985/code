@@ -1,7 +1,7 @@
 <!-- US-8: saves a recipe to the Recipe Book (also reused by the GenAI Sous-Chef). -->
 <template>
   <BaseButton
-    data-testid="recipe-save-button"
+    data-testid="save-recipe-button"
     :data-saved="saved"
     :variant="saved ? 'secondary' : 'primary'"
     :disabled="saved"
