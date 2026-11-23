@@ -122,19 +122,27 @@ async function submitDialog() {
 }
 
 describe('US2 user flow', () => {
-  it('keeps keyboard focus in the modal and restores it when cancelling with Escape', async () => {
+  it('opens the modal without focusing an input and keeps keyboard navigation inside it', async () => {
     const wrapper = await mountPantry()
     try {
       const opener = wrapper.findAll('button').find((button) => button.text() === '+ Add item')
       opener.element.focus()
       await opener.trigger('click')
       await flushPromises()
-      expect(document.activeElement.id).toBe('item-name')
       const dialog = document.querySelector('[role="dialog"]')
+      expect(document.activeElement).toBe(dialog)
       const buttons = dialog.querySelectorAll('button')
       const first = buttons[0],
         last = buttons[buttons.length - 1]
-      last.focus()
+      dialog.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Tab',
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      expect(document.activeElement).toBe(last)
       last.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
       )
@@ -168,7 +176,11 @@ describe('US2 user flow', () => {
       expect(document.querySelector('[role="dialog"]').textContent).toContain(
         'Item name is required.',
       )
+      expect(document.activeElement).toBe(document.querySelector('[role="dialog"]'))
+      const categorySelect = document.querySelector('#item-category')
+      categorySelect.focus()
       await fillForm({ name: 'Pesto sauce', category: '__smartpantry_create_category__' })
+      expect(document.activeElement).toBe(categorySelect)
       const categoryInput = document.querySelector('#new-category')
       categoryInput.value = 'Sauces'
       categoryInput.dispatchEvent(new Event('input', { bubbles: true }))
@@ -228,4 +240,35 @@ describe('US2 user flow', () => {
       wrapper.unmount()
     }
   })
+})
+
+it('opens shopping and transfer dialogs without focusing editable fields', async () => {
+  const wrapper = await mountPantry()
+  try {
+    await wrapper.get('[data-testid="shopping-list-button"]').trigger('click')
+    const panel = document.querySelector('[data-testid="shopping-list-screen"]')
+    expect(document.activeElement).toBe(panel)
+
+    const input = panel.querySelector('#shopping-item-name')
+    input.value = 'Oats'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    const add = panel.querySelector('[data-testid="add-button"]')
+    add.focus()
+    add.click()
+    await flushPromises()
+    expect(document.activeElement).toBe(add)
+
+    panel.querySelector('input[type="checkbox"]').click()
+    await flushPromises()
+    panel.querySelector('[data-testid="move-to-pantry-button"]').click()
+    await flushPromises()
+    const transfer = document.querySelector('[data-testid="shopping-list-transfer-dialog"]')
+    expect(document.activeElement).toBe(transfer)
+
+    transfer.querySelector('[data-testid="close-transfer-dialog-button"]').click()
+    await flushPromises()
+    expect(document.activeElement).toBe(panel)
+  } finally {
+    wrapper.unmount()
+  }
 })

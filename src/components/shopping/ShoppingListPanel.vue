@@ -20,7 +20,7 @@
           v-if="scanningItem"
           :item-name="scanningItem.name"
           @found="productFound"
-          @close="closeScanner"
+          @close="showScanner(null)"
         />
         <template v-else>
           <div class="flex items-start justify-between gap-3 border-b border-neutral-200 p-5">
@@ -47,7 +47,6 @@
               <div class="flex gap-2">
                 <input
                   id="shopping-item-name"
-                  ref="nameInput"
                   v-model="newItem"
                   data-testid="item-name-input"
                   autocomplete="off"
@@ -152,7 +151,7 @@
                         : 'border-neutral-400 text-neutral-700 hover:border-neutral-800'
                     "
                     :aria-label="item.scanned ? `Scan ${item.name} again` : `Scan ${item.name}`"
-                    @click="scanningItem = item"
+                    @click="showScanner(item)"
                   >
                     <svg
                       v-if="item.scanned"
@@ -257,12 +256,12 @@ const ShoppingScanner = defineAsyncComponent(
   () => import('@/components/shopping/ShoppingScanner.vue'),
 )
 import { useShoppingListStore } from '@/stores/shoppingList'
+import { trapDialogTab } from '@/utils/dialogFocus'
 import { UNIT_LABELS } from '@/utils/pantry'
 
 const emit = defineEmits(['close'])
 const store = useShoppingListStore()
 const panel = ref(null)
-const nameInput = ref(null)
 const newItem = ref('')
 const addError = ref('')
 const scanningItem = ref(null)
@@ -283,13 +282,11 @@ function addItem() {
   } catch (error) {
     addError.value = error.message
   }
-  nameInput.value?.focus()
 }
 
-async function closeScanner() {
-  scanningItem.value = null
-  await nextTick()
-  nameInput.value?.focus()
+function showScanner(item) {
+  scanningItem.value = item
+  panel.value?.focus()
 }
 
 function productFound(product) {
@@ -305,7 +302,7 @@ function productFound(product) {
   }
   window.clearTimeout(toastTimer)
   toastTimer = window.setTimeout(() => (scanToast.value = null), 6000)
-  closeScanner()
+  showScanner(null)
 }
 
 function undoScan() {
@@ -328,28 +325,16 @@ function itemsMoved(count) {
 function onKeydown(event) {
   if (event.key === 'Escape') {
     event.stopPropagation()
-    if (scanningItem.value) closeScanner()
+    if (scanningItem.value) showScanner(null)
     else emit('close')
   }
-  if (event.key !== 'Tab') return
-  const controls = [...panel.value.querySelectorAll('button, input, select')].filter(
-    (element) => !element.disabled,
-  )
-  const first = controls[0],
-    last = controls.at(-1)
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
+  trapDialogTab(event, panel.value)
 }
 onMounted(() => {
   previousFocus = document.activeElement
   previousOverflow = document.body.style.overflow
   document.body.style.overflow = 'hidden'
-  nameInput.value?.focus()
+  panel.value.focus()
 })
 onBeforeUnmount(() => {
   window.clearTimeout(toastTimer)
