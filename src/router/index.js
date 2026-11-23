@@ -19,6 +19,12 @@ const routes = [
     meta: { requiresProfile: true },
   },
   {
+    path: '/recipes',
+    name: 'recipes',
+    component: () => import('../pages/RecipesPage.vue'),
+    meta: { requiresProfile: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: { name: 'welcome' },
   },

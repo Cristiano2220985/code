@@ -91,6 +91,24 @@ checked item (scanned items already come with the quantity and unit). After
 **Confirm** the items are added to the pantry and removed from the list; unchecked
 items stay on the list.
 
+## US-19: Recipe discovery
+
+**Recipes** in the menu opens the discovery page. **Search Recipes** looks up catalogue
+recipes in [TheMealDB](https://www.themealdb.com/api.php) (free public API, test key `1`,
+no account needed) using the names of the pantry items.
+
+- Each recipe shows the **pantry match**: ingredients in the pantry ÷ ingredients of the
+  recipe. Names are compared without case and singular/plural ("Carrots" = "Carrot").
+- Recipes that use an item expiring within 48 hours come first, then the best match.
+- Recipes that break the active profile's lifestyles, allergies or excluded ingredients
+  are hidden. The rules are keyword lists in `src/utils/recipes.js`.
+- The recipe title opens the details: available and missing ingredients and the overlap.
+- **Add missing** sends the missing ingredients to the shopping list (US-09).
+
+The free API filters by one ingredient at a time, so a search makes one request per
+pantry item and then loads the details of the best candidates (12 results at most).
+An internet connection is needed to search.
+
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
