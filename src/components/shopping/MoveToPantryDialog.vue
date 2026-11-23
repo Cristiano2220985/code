@@ -283,7 +283,7 @@ onMounted(() => dialog.value.focus())
 <style scoped>
 @reference "../../css/index.css";
 .field {
-  @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-900 outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800;
+  @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-neutral-900 outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800;
 }
 .field.prefilled {
   @apply bg-neutral-100;

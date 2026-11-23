@@ -15,7 +15,7 @@
       type="text"
       maxlength="40"
       placeholder="e.g. Family"
-      class="w-full rounded-lg border bg-neutral-100 px-3 py-2.5 text-sm outline-none focus:border-neutral-800"
+      class="w-full rounded-lg border bg-neutral-100 px-3 py-2.5 outline-none focus:border-neutral-800"
       :class="error ? 'border-red-500' : 'border-neutral-300'"
       :aria-invalid="Boolean(error)"
     />

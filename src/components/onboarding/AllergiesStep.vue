@@ -28,7 +28,7 @@
         type="text"
         maxlength="40"
         placeholder="e.g. Mushrooms"
-        class="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-neutral-100 px-3 py-2.5 text-sm outline-none focus:border-neutral-800"
+        class="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-neutral-100 px-3 py-2.5 outline-none focus:border-neutral-800"
       />
       <BaseButton
         type="submit"
