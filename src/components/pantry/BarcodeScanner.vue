@@ -34,37 +34,17 @@
 
     <!-- 1. Camera / messages -->
     <template v-if="view === 'scanner'">
-      <div
-        v-if="state === 'camera-unavailable' || state === 'not-found'"
-        class="flex flex-col items-center py-4 text-center"
-      >
+      <div v-if="problem" class="flex flex-col items-center py-4 text-center">
         <span
           class="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-400 text-lg font-bold"
           aria-hidden="true"
           >!</span
         >
-        <p
-          v-if="state === 'camera-unavailable'"
-          role="alert"
-          class="mt-3 text-base font-bold"
-          data-testid="barcode-camera-unavailable-message"
-        >
-          Camera access is not available
-        </p>
-        <p
-          v-else
-          role="alert"
-          class="mt-3 text-base font-bold"
-          data-testid="barcode-product-not-found-message"
-        >
-          Product not found
+        <p role="alert" class="mt-3 text-base font-bold" :data-testid="`barcode-${state}-message`">
+          {{ problem.title }}
         </p>
         <p class="mt-1 max-w-xs text-xs text-neutral-500">
-          {{
-            state === 'camera-unavailable'
-              ? 'Camera permission is denied. You can still add the product using a photo or by typing its details.'
-              : 'We could not find this barcode in the product catalogue. You can try a photo or enter the item details yourself.'
-          }}
+          {{ problem.description }}
         </p>
       </div>
 
@@ -150,7 +130,7 @@
     <div data-testid="barcode-fallback-options" class="mt-4 flex flex-col gap-2 sm:flex-row">
       <BaseButton
         v-if="view === 'scanner'"
-        :variant="hasProblem ? 'primary' : 'secondary'"
+        :variant="problem ? 'primary' : 'secondary'"
         class="flex-1"
         data-testid="upload-image-button"
         @click="openUpload"
@@ -164,7 +144,7 @@
         >{{ view === 'upload' ? 'Enter manually instead' : 'Enter manually' }}</BaseButton
       >
     </div>
-    <p v-if="hasProblem" class="mt-3 text-center text-xs text-neutral-500">
+    <p v-if="problem" class="mt-3 text-center text-xs text-neutral-500">
       You can continue without scanning.
     </p>
   </div>
@@ -189,7 +169,6 @@ const hints = new Map([
 const reader = new BrowserMultiFormatReader(hints)
 
 const view = ref('scanner') // 'scanner' | 'upload'
-// 'starting' | 'scanning' | 'searching' | 'camera-unavailable' | 'not-found'
 const state = ref('starting')
 const video = ref(null)
 const fileInput = ref(null)
@@ -200,7 +179,21 @@ const searching = ref(false)
 let cameraControls = null
 let closed = false
 
-const hasProblem = computed(() => ['camera-unavailable', 'not-found'].includes(state.value))
+const problems = {
+  'camera-unavailable': {
+    title: 'Camera access is not available',
+    description: 'You can still add the product using a photo or by typing its details.',
+  },
+  'product-not-found': {
+    title: 'Product not found',
+    description: 'Try another barcode or enter the item details manually.',
+  },
+  'lookup-unavailable': {
+    title: 'Online product lookup is unavailable',
+    description: 'Check your connection and try again, or enter the item details manually.',
+  },
+}
+const problem = computed(() => problems[state.value])
 const statusMessage = computed(
   () =>
     ({
@@ -244,20 +237,26 @@ function stopCamera() {
 // Product lookup ---------------------------------------------------------------
 
 async function lookup(code) {
-  if (searching.value) return
+  if (closed || searching.value) return
   searching.value = true
   stopCamera()
   if (view.value === 'scanner') state.value = 'searching'
 
-  const product = await findProductByBarcode(code)
-  searching.value = false
-  if (closed) return
-
-  if (product) {
-    emit('found', { ...product, barcode: code })
-  } else {
+  try {
+    const product = await findProductByBarcode(code)
+    if (closed) return
+    if (product) {
+      emit('found', { ...product, barcode: code })
+      return
+    }
     view.value = 'scanner'
-    state.value = 'not-found'
+    state.value = 'product-not-found'
+  } catch {
+    if (closed) return
+    view.value = 'scanner'
+    state.value = 'lookup-unavailable'
+  } finally {
+    searching.value = false
   }
 }
 

@@ -1,7 +1,7 @@
 // Product lookup by barcode (EAN/UPC).
-// 1. A small local catalogue, so the most common products work offline.
-// 2. Open Food Facts (free public database) for every other barcode.
+// The bundled catalogue and previous successful lookups are available offline.
 
+import { loadState, saveState } from '@/services/storage'
 import { PANTRY_UNITS } from '@/utils/pantry'
 
 const LOCAL_CATALOGUE = {
@@ -12,6 +12,8 @@ const LOCAL_CATALOGUE = {
 
 const OPEN_FOOD_FACTS_URL = 'https://world.openfoodfacts.org/api/v2/product/'
 const TIMEOUT_MS = 6000
+const CATALOGUE_STORAGE_KEY = 'product-catalogue'
+const MAX_SAVED_PRODUCTS = 100
 
 // Open Food Facts units -> SmartPantry units
 const UNIT_MAP = { g: 'g', kg: 'kg', ml: 'mL', l: 'L' }
@@ -20,26 +22,39 @@ export function isValidBarcode(code) {
   return /^\d{8,14}$/.test(code ?? '')
 }
 
-// Returns { name, quantity, unit } or null when the product is not found.
+function loadCatalogue() {
+  const saved = loadState(CATALOGUE_STORAGE_KEY, [])
+  return Array.isArray(saved) ? saved : []
+}
+
+// Returns a product or null if it is absent, and rejects if remote lookup is unavailable.
 export async function findProductByBarcode(code) {
   const barcode = String(code ?? '').trim()
   if (!isValidBarcode(barcode)) return null
 
   if (LOCAL_CATALOGUE[barcode]) return { ...LOCAL_CATALOGUE[barcode] }
 
-  try {
-    const response = await fetch(
-      `${OPEN_FOOD_FACTS_URL}${barcode}.json?fields=product_name,product_quantity,product_quantity_unit,quantity`,
-      { signal: AbortSignal.timeout(TIMEOUT_MS) },
-    )
-    if (!response.ok) return null
-    const data = await response.json()
-    if (data.status !== 1 || !data.product?.product_name) return null
-    return toPantryProduct(data.product)
-  } catch {
-    // No internet or the request took too long: treated as "not found".
-    return null
-  }
+  const cachedProduct = loadCatalogue().find((entry) => entry?.barcode === barcode)?.product
+  if (typeof cachedProduct?.name === 'string') return cachedProduct
+  if (navigator.onLine === false) throw new Error('Product lookup requires a connection.')
+
+  const response = await fetch(
+    `${OPEN_FOOD_FACTS_URL}${barcode}.json?fields=product_name,product_quantity,product_quantity_unit,quantity`,
+    { signal: AbortSignal.timeout(TIMEOUT_MS) },
+  )
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`Product lookup failed (${response.status}).`)
+  const data = await response.json()
+  const name = data.product?.product_name
+  if (data.status !== 1 || typeof name !== 'string' || !name.trim()) return null
+
+  const product = toPantryProduct(data.product)
+  // Read again after the request so overlapping lookups retain each other's results.
+  const recentProducts = loadCatalogue()
+    .filter((entry) => entry?.barcode !== barcode)
+    .slice(0, MAX_SAVED_PRODUCTS - 1)
+  saveState(CATALOGUE_STORAGE_KEY, [{ barcode, product }, ...recentProducts])
+  return product
 }
 
 function toPantryProduct(product) {
