@@ -37,3 +37,22 @@ export function recipeOrigin(recipe) {
 
 export const countLabel = (count, singular, plural = `${singular}s`) =>
   `${count} ${count === 1 ? singular : plural}`
+
+/** Returns an error message, or an empty string when the collection name is valid. */
+export function validateCollectionName(name, collections = []) {
+  const trimmed = (name ?? '').trim()
+  if (!trimmed) return 'Collection name is required.'
+  const exists = collections.some(
+    (collection) => collection.name.toLowerCase() === trimmed.toLowerCase(),
+  )
+  return exists ? 'A collection with this name already exists.' : ''
+}
+
+export function isValidCollection(collection) {
+  return Boolean(
+    collection &&
+    typeof collection.id === 'string' &&
+    typeof collection.name === 'string' &&
+    Array.isArray(collection.recipeIds),
+  )
+}

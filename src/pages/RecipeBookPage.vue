@@ -1,23 +1,92 @@
 <!--
   US-8: Recipe Book. Saved recipes stay available offline and can be opened again with
-  their current pantry match.
+  their current pantry match. Collections group saved recipes.
 -->
 <template>
   <DashboardLayout>
     <div data-testid="book-view">
-      <h1 class="text-xl font-bold md:text-2xl">My Recipe Book</h1>
-      <p class="mt-1 text-sm text-neutral-500">
-        Save, organize and revisit recipes whenever you need them.
-      </p>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold md:text-2xl">My Recipe Book</h1>
+          <p class="mt-1 text-sm text-neutral-500">
+            Save, organize and revisit recipes whenever you need them.
+          </p>
+        </div>
+        <BaseButton
+          class="shrink-0"
+          data-testid="recipe-book-create-collection-button"
+          @click="creating = true"
+        >
+          + New collection
+        </BaseButton>
+      </div>
 
       <div class="mt-5 grid grid-cols-2 gap-3 sm:max-w-sm">
-        <div class="rounded-xl border border-neutral-300 p-3">
-          <p class="text-lg font-bold">{{ book.recipes.length }}</p>
-          <p class="text-xs text-neutral-500">Saved recipes</p>
+        <div
+          v-for="stat in stats"
+          :key="stat.label"
+          class="rounded-xl border border-neutral-300 p-3"
+        >
+          <p class="text-lg font-bold">{{ stat.value }}</p>
+          <p class="text-xs text-neutral-500">{{ stat.label }}</p>
         </div>
       </div>
 
-      <section class="mt-6" aria-labelledby="book-saved-title">
+      <div
+        class="mt-4 flex gap-2 overflow-x-auto rounded-xl border border-neutral-300 p-2"
+        role="group"
+        aria-label="Recipe Book sections"
+      >
+        <button
+          type="button"
+          :aria-pressed="!activeCollection"
+          :class="tabClass(!activeCollection)"
+          @click="activeCollectionId = null"
+        >
+          All saved recipes
+          <span class="text-xs opacity-70">{{ book.recipes.length }}</span>
+        </button>
+        <button
+          v-for="collection in book.collections"
+          :key="collection.id"
+          type="button"
+          data-testid="recipe-book-collection-card"
+          :data-collection-name="collection.name"
+          :aria-pressed="activeCollectionId === collection.id"
+          :class="tabClass(activeCollectionId === collection.id)"
+          @click="activeCollectionId = collection.id"
+        >
+          <span data-testid="recipe-book-collection-name">{{ collection.name }}</span>
+          <span class="text-xs opacity-70">{{ collection.recipeIds.length }}</span>
+        </button>
+      </div>
+
+      <section
+        v-if="activeCollection"
+        class="mt-5"
+        data-testid="recipe-book-collection-detail-screen"
+        :data-collection-name="activeCollection.name"
+        aria-labelledby="book-collection-title"
+      >
+        <button
+          type="button"
+          class="text-xs font-semibold text-neutral-600 hover:text-neutral-900"
+          @click="activeCollectionId = null"
+        >
+          ← All saved recipes
+        </button>
+        <h2 id="book-collection-title" class="mt-3 font-semibold">{{ activeCollection.name }}</h2>
+        <p class="text-xs text-neutral-500">
+          {{ countLabel(activeCollection.recipeIds.length, 'recipe') }} in this collection
+        </p>
+        <EmptyState
+          v-if="!activeCollection.recipeIds.length"
+          title="This collection is empty"
+          :text="`Add saved recipes to ${activeCollection.name}, or explore new dishes to save for later.`"
+        />
+      </section>
+
+      <section v-else class="mt-6" aria-labelledby="book-saved-title">
         <h2 id="book-saved-title" class="font-semibold">All saved recipes</h2>
         <p class="text-xs text-neutral-500">Quick access to your favorite dishes.</p>
 
@@ -49,6 +118,7 @@
       </section>
     </div>
 
+    <CreateCollectionDialog v-if="creating" @close="creating = false" @created="openCollection" />
     <RecipeDetailPanel
       v-if="selected"
       :match="selected"
@@ -62,13 +132,15 @@
 <script setup>
 import { computed, ref } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import BookRecipeCard from '@/components/recipeBook/BookRecipeCard.vue'
+import CreateCollectionDialog from '@/components/recipeBook/CreateCollectionDialog.vue'
 import EmptyState from '@/components/recipeBook/EmptyState.vue'
 import RecipeDetailPanel from '@/components/recipes/RecipeDetailPanel.vue'
 import { useAddMissing } from '@/composables/useAddMissing'
 import { usePantryStore } from '@/stores/pantry'
 import { useRecipeBookStore } from '@/stores/recipeBook'
-import { filterRecipesByName } from '@/utils/recipeBook'
+import { countLabel, filterRecipesByName } from '@/utils/recipeBook'
 import { matchRecipe } from '@/utils/recipes'
 
 const book = useRecipeBookStore()
@@ -77,8 +149,30 @@ const { message: listMessage, addMissing } = useAddMissing()
 
 const query = ref('')
 const selected = ref(null)
+const creating = ref(false)
+const activeCollectionId = ref(null)
 
 const visibleRecipes = computed(() => filterRecipesByName(book.recipes, query.value))
+const activeCollection = computed(
+  () => book.collections.find((collection) => collection.id === activeCollectionId.value) ?? null,
+)
+const stats = computed(() => [
+  { label: 'Saved recipes', value: book.recipes.length },
+  { label: 'Collections', value: book.collections.length },
+])
+
+const tabClass = (active) => [
+  'flex shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-sm',
+  active
+    ? 'border-neutral-800 bg-neutral-800 font-semibold text-white'
+    : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-800',
+]
+
+// A new collection is opened right away, as shown in the mockup.
+function openCollection(collection) {
+  creating.value = false
+  activeCollectionId.value = collection.id
+}
 
 // The details show the saved recipe compared with the pantry as it is now.
 function openRecipe(recipe) {

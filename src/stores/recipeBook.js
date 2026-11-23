@@ -1,17 +1,27 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { loadState, saveState } from '@/services/storage'
-import { isValidSavedRecipe, toSavedRecipe } from '@/utils/recipeBook'
+import {
+  isValidCollection,
+  isValidSavedRecipe,
+  toSavedRecipe,
+  validateCollectionName,
+} from '@/utils/recipeBook'
+import { generateId } from '@/utils/profile'
 
 const STORAGE_KEY = 'recipe-book'
 
-// US-8: recipes saved by the household, available offline from the Book page.
+// US-8: recipes saved by the household, available offline from the Book page, and the
+// collections used to organize them (a collection only keeps the ids of saved recipes).
 export const useRecipeBookStore = defineStore('recipeBook', () => {
   const saved = loadState(STORAGE_KEY, null)
   const recipes = ref(Array.isArray(saved?.recipes) ? saved.recipes.filter(isValidSavedRecipe) : [])
+  const collections = ref(
+    Array.isArray(saved?.collections) ? saved.collections.filter(isValidCollection) : [],
+  )
 
   function persist() {
-    saveState(STORAGE_KEY, { recipes: recipes.value })
+    saveState(STORAGE_KEY, { recipes: recipes.value, collections: collections.value })
   }
 
   function isSaved(recipeId) {
@@ -25,5 +35,14 @@ export const useRecipeBookStore = defineStore('recipeBook', () => {
     persist()
   }
 
-  return { recipes, isSaved, saveRecipe }
+  function createCollection(value) {
+    const error = validateCollectionName(value, collections.value)
+    if (error) throw new Error(error)
+    const collection = { id: generateId(), name: value.trim(), recipeIds: [] }
+    collections.value.push(collection)
+    persist()
+    return collection
+  }
+
+  return { recipes, collections, isSaved, saveRecipe, createCollection }
 })
