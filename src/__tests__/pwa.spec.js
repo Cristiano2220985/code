@@ -1,8 +1,21 @@
 // @vitest-environment node
 
+import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
 import { expect, it, vi } from 'vitest'
 import { build } from 'vite'
+
+it('routes the installed app launch URL to the app shell on Vercel before offline setup', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../public/manifest.webmanifest', import.meta.url), 'utf8'),
+  )
+  const vercel = JSON.parse(readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8'))
+  const launchPath = new URL(manifest.start_url, 'https://example.test/manifest.webmanifest')
+    .pathname
+
+  expect(vercel.rewrites).toContainEqual({ source: launchPath, destination: '/index.html' })
+  expect(vercel.rewrites).toContainEqual({ source: '/onboarding', destination: '/index.html' })
+})
 
 it('precaches the production app and serves a direct offline navigation under its base path', async () => {
   const base = '/smartpantry/'

@@ -65,8 +65,9 @@ The production build includes an installable PWA. Run `npm run build` followed
 by `npm run preview` and open the localhost URL. To test on a phone, serve
 `dist/` from an HTTPS host. Configure the host to serve `index.html` for app
 routes such as `/pantry` and `/onboarding`, and serve `sw.js` as JavaScript.
-On Vercel, configure the route rewrites in `vercel.json`. Test a deployment that
-includes the PWA changes, using the Vite preset and the `dist/` output directory.
+On Vercel, `vercel.json` serves the app for direct requests to `/pantry` and
+`/onboarding`. After deploying, open `/pantry` directly to verify that the app
+can launch from its Home Screen icon before the service worker takes control.
 
 - Visit SmartPantry once with a connection so the service worker can download
   the application. **Install app** opens the browser's installation prompt or
