@@ -44,5 +44,21 @@ export const useRecipeBookStore = defineStore('recipeBook', () => {
     return collection
   }
 
-  return { recipes, collections, isSaved, saveRecipe, createCollection }
+  function findCollection(collectionId) {
+    const collection = collections.value.find((entry) => entry.id === collectionId)
+    if (!collection) throw new Error('This collection no longer exists.')
+    return collection
+  }
+
+  // A recipe can belong to several collections, but only once to each of them.
+  function addToCollection(collectionId, recipeId) {
+    const collection = findCollection(collectionId)
+    if (!isSaved(recipeId)) throw new Error('Save the recipe before adding it to a collection.')
+    if (collection.recipeIds.includes(String(recipeId))) return collection
+    collection.recipeIds.push(String(recipeId))
+    persist()
+    return collection
+  }
+
+  return { recipes, collections, isSaved, saveRecipe, createCollection, addToCollection }
 })

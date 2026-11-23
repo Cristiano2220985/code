@@ -41,7 +41,7 @@
           type="button"
           :aria-pressed="!activeCollection"
           :class="tabClass(!activeCollection)"
-          @click="activeCollectionId = null"
+          @click="showSection(null)"
         >
           All saved recipes
           <span class="text-xs opacity-70">{{ book.recipes.length }}</span>
@@ -54,12 +54,20 @@
           :data-collection-name="collection.name"
           :aria-pressed="activeCollectionId === collection.id"
           :class="tabClass(activeCollectionId === collection.id)"
-          @click="activeCollectionId = collection.id"
+          @click="showSection(collection.id)"
         >
           <span data-testid="recipe-book-collection-name">{{ collection.name }}</span>
           <span class="text-xs opacity-70">{{ collection.recipeIds.length }}</span>
         </button>
       </div>
+
+      <p
+        v-if="statusMessage"
+        role="status"
+        class="mt-3 rounded-lg bg-neutral-800 px-3 py-2 text-xs font-semibold text-white"
+      >
+        {{ statusMessage }}
+      </p>
 
       <section
         v-if="activeCollection"
@@ -71,7 +79,7 @@
         <button
           type="button"
           class="text-xs font-semibold text-neutral-600 hover:text-neutral-900"
-          @click="activeCollectionId = null"
+          @click="showSection(null)"
         >
           ← All saved recipes
         </button>
@@ -80,10 +88,18 @@
           {{ countLabel(activeCollection.recipeIds.length, 'recipe') }} in this collection
         </p>
         <EmptyState
-          v-if="!activeCollection.recipeIds.length"
+          v-if="!collectionRecipes.length"
           title="This collection is empty"
           :text="`Add saved recipes to ${activeCollection.name}, or explore new dishes to save for later.`"
         />
+        <ul
+          data-testid="recipe-book-collection-recipes-list"
+          class="mt-4 grid gap-4 md:grid-cols-2"
+        >
+          <li v-for="recipe in collectionRecipes" :key="recipe.id">
+            <BookRecipeCard :recipe="recipe" note="In this collection" @open="openRecipe" />
+          </li>
+        </ul>
       </section>
 
       <section v-else class="mt-6" aria-labelledby="book-saved-title">
@@ -112,12 +128,30 @@
 
         <ul data-testid="recipe-book-saved-recipes-list" class="mt-4 grid gap-4 md:grid-cols-2">
           <li v-for="recipe in visibleRecipes" :key="recipe.id">
-            <BookRecipeCard :recipe="recipe" @open="openRecipe" />
+            <BookRecipeCard :recipe="recipe" @open="openRecipe">
+              <template #actions>
+                <button
+                  type="button"
+                  data-testid="recipe-book-add-to-collection-button"
+                  class="rounded-lg border border-neutral-400 px-3 py-1.5 font-semibold text-neutral-900 hover:bg-neutral-100"
+                  @click="adding = recipe"
+                >
+                  + Add to collection
+                </button>
+              </template>
+            </BookRecipeCard>
           </li>
         </ul>
       </section>
     </div>
 
+    <AddToCollectionDialog
+      v-if="adding"
+      :recipe="adding"
+      @close="adding = null"
+      @added="onAdded"
+      @create="createFromPicker"
+    />
     <CreateCollectionDialog v-if="creating" @close="creating = false" @created="openCollection" />
     <RecipeDetailPanel
       v-if="selected"
@@ -133,6 +167,7 @@
 import { computed, ref } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AddToCollectionDialog from '@/components/recipeBook/AddToCollectionDialog.vue'
 import BookRecipeCard from '@/components/recipeBook/BookRecipeCard.vue'
 import CreateCollectionDialog from '@/components/recipeBook/CreateCollectionDialog.vue'
 import EmptyState from '@/components/recipeBook/EmptyState.vue'
@@ -140,7 +175,7 @@ import RecipeDetailPanel from '@/components/recipes/RecipeDetailPanel.vue'
 import { useAddMissing } from '@/composables/useAddMissing'
 import { usePantryStore } from '@/stores/pantry'
 import { useRecipeBookStore } from '@/stores/recipeBook'
-import { countLabel, filterRecipesByName } from '@/utils/recipeBook'
+import { countLabel, filterRecipesByName, recipesInCollection } from '@/utils/recipeBook'
 import { matchRecipe } from '@/utils/recipes'
 
 const book = useRecipeBookStore()
@@ -151,10 +186,15 @@ const query = ref('')
 const selected = ref(null)
 const creating = ref(false)
 const activeCollectionId = ref(null)
+const adding = ref(null) // saved recipe being added to a collection
+const statusMessage = ref('')
 
 const visibleRecipes = computed(() => filterRecipesByName(book.recipes, query.value))
 const activeCollection = computed(
   () => book.collections.find((collection) => collection.id === activeCollectionId.value) ?? null,
+)
+const collectionRecipes = computed(() =>
+  activeCollection.value ? recipesInCollection(activeCollection.value, book.recipes) : [],
 )
 const stats = computed(() => [
   { label: 'Saved recipes', value: book.recipes.length },
@@ -168,10 +208,29 @@ const tabClass = (active) => [
     : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-800',
 ]
 
+// null shows All saved recipes; otherwise the collection with that id.
+function showSection(collectionId) {
+  activeCollectionId.value = collectionId
+  statusMessage.value = ''
+}
+
 // A new collection is opened right away, as shown in the mockup.
 function openCollection(collection) {
   creating.value = false
-  activeCollectionId.value = collection.id
+  showSection(collection.id)
+}
+
+// After adding, the collection is shown with the recipe inside it.
+function onAdded(collection) {
+  const recipeName = adding.value.name
+  adding.value = null
+  showSection(collection.id)
+  statusMessage.value = `${recipeName} added to ${collection.name}.`
+}
+
+function createFromPicker() {
+  adding.value = null
+  creating.value = true
 }
 
 // The details show the saved recipe compared with the pantry as it is now.

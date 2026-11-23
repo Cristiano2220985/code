@@ -56,3 +56,10 @@ export function isValidCollection(collection) {
     Array.isArray(collection.recipeIds),
   )
 }
+
+// Saved recipes of a collection, in the order they were added.
+export function recipesInCollection(collection, recipes) {
+  return collection.recipeIds
+    .map((id) => recipes.find((recipe) => recipe.id === id))
+    .filter(Boolean)
+}
