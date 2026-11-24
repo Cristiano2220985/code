@@ -1,5 +1,70 @@
 @import 'tailwindcss';
 
+/* Design tokens: neutral canvas, white surfaces, black actions and one lime accent. */
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --color-canvas: #ecedef;
+  --color-surface: #ffffff;
+  --color-tile: #f2f3f5;
+  --color-ink: #0e0f11;
+  --color-ink-soft: #3b3e44;
+  --color-muted: #8a8e96;
+  --color-hairline: #e2e4e8;
+  --color-lime: #dff27a;
+  --color-lime-ink: #2f3a06;
+  --color-status-today: #e5484d;
+  --color-status-soon: #e8a33d;
+  --color-status-ok: #46a758;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Frosted glass, used over photos and for the floating navigation. */
+@utility glass {
+  background-color: rgb(255 255 255 / 0.62);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    0 12px 30px -16px rgb(0 0 0 / 0.28);
+}
+
+/*
+  Soft two-layer shadow for white cards: a short edge line and a wide, faint lift.
+  Built from Tailwind's shadow variables so it still combines with ring-* utilities.
+*/
+@utility card {
+  --tw-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.14);
+  box-shadow:
+    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+/* Touch feedback (there is no hover on mobile): the element sinks slightly while pressed. */
+@utility pressable {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: transform, box-shadow, background-color, color, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+
+  &:active:not(:disabled, [aria-disabled='true']) {
+    transform: scale(0.97);
+    --tw-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active:not(:disabled) {
+      transform: none;
+    }
+  }
+}
+
 input:not([type='checkbox'], [type='file']),
 select,
 textarea {

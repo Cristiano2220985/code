@@ -4,133 +4,128 @@
 -->
 <template>
   <DashboardLayout>
-    <div data-testid="recipe-discovery-screen">
-      <h1 class="text-xl font-bold md:text-2xl">Discover recipes</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+    <div data-testid="recipe-discovery-screen" class="mt-4 md:mt-2">
+      <p class="text-sm text-muted">From what you already have</p>
+      <h1 class="mt-1 text-[40px] leading-[1.02] font-semibold tracking-[-0.045em] md:text-5xl">
+        Discover <em class="font-medium text-ink-soft">recipes</em>
+      </h1>
+      <p class="mt-2 text-sm text-muted">
         Find meals you can prepare with the ingredients you already have.
       </p>
 
-      <section
-        class="mt-5 flex gap-3 rounded-xl border border-neutral-300 p-4"
-        aria-labelledby="recipes-pantry-title"
-      >
-        <div class="min-w-0">
-          <h2 id="recipes-pantry-title" class="text-sm font-semibold">
-            Available in your pantry
-            <span class="font-normal text-neutral-500">({{ pantry.items.length }})</span>
-          </h2>
-          <p v-if="!pantry.items.length" class="mt-1 text-xs text-neutral-500">
-            Your pantry is empty. Add items to find recipes that use them.
-          </p>
-          <ul v-else class="mt-2 flex flex-wrap gap-1.5">
-            <li
-              v-for="item in pantry.items"
-              :key="item.id"
-              class="rounded-md border px-2 py-0.5 text-xs"
-              :class="
-                isExpiring(item)
-                  ? 'border-2 border-neutral-700 font-semibold'
-                  : 'border-neutral-300'
-              "
-            >
-              {{ item.name }}
-              <span class="font-normal text-neutral-500">{{ quantityLabel(item) }}</span>
-              <span v-if="isExpiring(item)" class="font-normal text-neutral-500">
-                · expires {{ expirationLabel(item.expirationDate, today).toLowerCase() }}</span
-              >
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <form
-        class="mt-4 rounded-xl border border-neutral-300 p-4"
-        novalidate
-        @submit.prevent="search"
-      >
+      <form class="mt-5" novalidate @submit.prevent="search">
         <label for="recipes-query" class="sr-only">Search by recipe or ingredient</label>
-        <div class="flex flex-col gap-2 sm:flex-row">
+        <div class="card flex items-center gap-2 rounded-full bg-surface p-1.5 pl-4">
+          <AppIcon name="search" class="h-5 w-5 text-muted" />
           <input
             id="recipes-query"
             v-model="query"
             type="search"
             autocomplete="off"
             placeholder="Search by recipe or ingredient..."
-            class="min-w-0 flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800"
+            class="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-muted"
           />
           <BaseButton
             type="submit"
             data-testid="recipes-search-button"
+            class="!px-4 !py-2.5"
             :disabled="status === 'loading'"
           >
             Search Recipes
           </BaseButton>
         </div>
         <div
-          class="mt-3 flex flex-col gap-1 text-xs text-neutral-500 sm:flex-row sm:justify-between"
+          class="mt-2.5 flex flex-col gap-1 px-1 text-xs text-muted sm:flex-row sm:justify-between"
         >
           <span>Expiring ingredients first, then best pantry match</span>
           <span
             >Based on your active household profile:
-            <b class="text-neutral-900">{{ profiles.activeProfile?.name }}</b></span
+            <b class="font-semibold text-ink">{{ profiles.activeProfile?.name }}</b></span
           >
         </div>
       </form>
+
+      <section
+        class="card mt-5 rounded-[26px] bg-surface p-4"
+        aria-labelledby="recipes-pantry-title"
+      >
+        <h2 id="recipes-pantry-title" class="text-sm font-semibold">
+          Available in your pantry
+          <span class="font-normal text-muted">({{ pantry.items.length }})</span>
+        </h2>
+        <p v-if="!pantry.items.length" class="mt-1 text-xs text-muted">
+          Your pantry is empty. Add items to find recipes that use them.
+        </p>
+        <ul v-else class="mt-3 flex flex-wrap gap-1.5">
+          <li
+            v-for="item in pantry.items"
+            :key="item.id"
+            class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs"
+            :class="isExpiring(item) ? 'bg-lime font-semibold text-lime-ink' : 'bg-tile'"
+          >
+            {{ item.name }}
+            <span class="font-normal opacity-60">{{ quantityLabel(item) }}</span>
+            <span v-if="isExpiring(item)" class="font-normal opacity-75">
+              · expires {{ expirationLabel(item.expirationDate, today).toLowerCase() }}</span
+            >
+          </li>
+        </ul>
+      </section>
 
       <p role="status" class="sr-only">{{ announcement }}</p>
 
       <section
         v-if="status === 'idle'"
-        class="mt-5 rounded-xl border border-dashed border-neutral-300 px-5 py-10 text-center"
+        class="mt-5 rounded-[26px] border border-dashed border-hairline px-5 py-10 text-center"
       >
-        <p class="font-semibold">Find meals with what you have</p>
-        <p class="mt-1 text-xs text-neutral-500">
+        <span
+          class="card mx-auto flex h-14 w-14 items-center justify-center rounded-[20px] bg-surface"
+        >
+          <AppIcon name="recipes" class="h-6 w-6" />
+        </span>
+        <p class="mt-4 font-semibold">Find meals with what you have</p>
+        <p class="mt-1 text-xs text-muted">
           Tap Search Recipes to match recipes to the {{ pantry.items.length }} ingredients in your
           pantry.
         </p>
       </section>
-      <p v-else-if="status === 'loading'" class="mt-5 text-sm text-neutral-500">
-        Searching recipes…
-      </p>
-      <p
-        v-else-if="status === 'error'"
-        class="mt-5 rounded-lg border border-neutral-700 p-4 text-sm"
-      >
+      <p v-else-if="status === 'loading'" class="mt-6 text-sm text-muted">Searching recipes…</p>
+      <p v-else-if="status === 'error'" class="mt-5 rounded-[22px] bg-surface p-4 text-sm">
         {{ error }} Check your connection and try again.
       </p>
 
       <section
         v-else
-        class="mt-6"
+        class="mt-7"
         data-testid="recipes-search-results"
         aria-labelledby="recipes-results-title"
       >
-        <h2 id="recipes-results-title" class="font-semibold">
+        <h2 id="recipes-results-title" class="text-xl font-semibold tracking-tight">
           Matching recipes
-          <span class="font-normal text-neutral-500">({{ visibleMatches.length }})</span>
+          <span class="font-normal text-muted">({{ visibleMatches.length }})</span>
         </h2>
-        <p class="text-xs text-neutral-500">Results are matched to the current pantry.</p>
+        <p class="text-xs text-muted">Results are matched to the current pantry.</p>
         <p
           v-if="listMessage && !selected"
           role="status"
-          class="mt-3 rounded-lg bg-neutral-800 px-3 py-2 text-xs font-semibold text-white"
+          class="mt-3 rounded-full bg-ink px-4 py-2.5 text-xs font-medium text-white"
         >
           {{ listMessage }}
         </p>
         <p
           v-if="hiddenCount"
-          class="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
+          class="mt-3 rounded-full bg-surface px-4 py-2.5 text-xs text-ink-soft"
         >
           Recipes that do not match the {{ profiles.activeProfile?.name }} profile are hidden.
         </p>
-        <p v-if="!visibleMatches.length" class="mt-4 text-sm text-neutral-500">
+        <p v-if="!visibleMatches.length" class="mt-4 text-sm text-muted">
           {{
             pantry.items.length
               ? 'No recipes found for your pantry.'
               : 'Add items to your pantry to find recipes.'
           }}
         </p>
-        <div class="mt-4 grid gap-4 md:grid-cols-2">
+        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <RecipeCard
             v-for="match in visibleMatches"
             :key="match.recipe.id"
@@ -156,6 +151,7 @@
 import { computed, ref, watch } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import RecipeCard from '@/components/recipes/RecipeCard.vue'
 import RecipeDetailPanel from '@/components/recipes/RecipeDetailPanel.vue'
 import { usePantryStore } from '@/stores/pantry'

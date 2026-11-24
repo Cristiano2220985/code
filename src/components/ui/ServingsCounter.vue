@@ -1,23 +1,23 @@
 <template>
-  <div class="flex items-center gap-3">
+  <div class="card flex items-center gap-1 rounded-full bg-surface p-1">
     <button
       type="button"
       data-testid="servings-decrease"
       aria-label="Decrease servings"
-      class="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-500 text-neutral-700 disabled:opacity-40"
+      class="pressable flex h-10 w-10 items-center justify-center rounded-full bg-tile text-lg text-ink disabled:opacity-35"
       :disabled="servings <= min"
       @click="servings = servings - 1"
     >
       &minus;
     </button>
-    <span data-testid="servings-value" class="w-5 text-center text-sm font-semibold">{{
+    <span data-testid="servings-value" class="w-8 text-center text-base font-semibold">{{
       servings
     }}</span>
     <button
       type="button"
       data-testid="servings-increase"
       aria-label="Increase servings"
-      class="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-800 text-white disabled:opacity-40"
+      class="pressable flex h-10 w-10 items-center justify-center rounded-full bg-ink text-lg text-white disabled:opacity-35"
       :disabled="servings >= max"
       @click="servings = servings + 1"
     >
