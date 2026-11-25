@@ -1,8 +1,18 @@
 // US-8 (Recipe Book): pure helpers for saved recipes (no Vue, no network).
 
+// Fields only AI recipes (US-28) have; they are kept so the recipe can be cooked offline.
+const AI_RECIPE_FIELDS = [
+  'source',
+  'description',
+  'servings',
+  'prepMinutes',
+  'cookMinutes',
+  'totalMinutes',
+]
+
 // Keeps only the recipe fields needed to show it again offline.
 export function toSavedRecipe(recipe) {
-  return {
+  const saved = {
     id: String(recipe.id),
     name: recipe.name.trim(),
     category: recipe.category ?? '',
@@ -13,6 +23,11 @@ export function toSavedRecipe(recipe) {
       measure: measure ?? '',
     })),
   }
+  if (Array.isArray(recipe.steps)) {
+    for (const field of AI_RECIPE_FIELDS) saved[field] = recipe[field]
+    saved.steps = recipe.steps.map(({ text, minutes }) => ({ text, minutes }))
+  }
+  return saved
 }
 
 export function isValidSavedRecipe(recipe) {

@@ -147,7 +147,9 @@ sent to the GenAI API and shown before generating. Selected leftovers that break
 (e.g. Chicken for a Vegetarian profile) are removed with a warning, and a generated recipe
 that still breaks the profile is rejected (the same rules as US-19, in `src/utils/recipes.js`).
 Switching profile updates the constraints and the default servings.
-**Regenerate** asks for another recipe with the same selection; if the request fails the
+**Save Recipe** keeps the recipe in the Recipe Book (category "AI creation"), with its times,
+servings and steps, so it is available offline. **Regenerate** asks for another recipe with
+the same selection; if the request fails the
 selection is kept and **Try again** repeats it.
 
 The recipe comes from [Google Gemini](https://ai.google.dev/gemini-api/docs). Create a free

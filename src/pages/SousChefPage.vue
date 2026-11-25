@@ -1,7 +1,7 @@
 <!--
   US-28: GenAI Sous-Chef. The selected leftovers, the active profile's dietary constraints and
   the serving size are sent to a GenAI API, which returns an original recipe with times,
-  portions, measurements and steps.
+  portions, measurements and steps, which can be saved to the Recipe Book (US-8).
 -->
 <template>
   <DashboardLayout>
@@ -86,7 +86,16 @@
             </ul>
           </template>
         </GeneratedRecipe>
-        <div class="mt-5 grid grid-cols-2 gap-2">
+        <p
+          v-if="book.isSaved(recipe.id)"
+          role="status"
+          class="mt-5 flex items-center justify-between rounded-lg bg-neutral-800 px-3 py-2 text-xs font-semibold text-white"
+        >
+          ✓ Saved to Recipe Book · AI creations
+          <RouterLink :to="{ name: 'book' }" class="underline underline-offset-2">View</RouterLink>
+        </p>
+        <SaveRecipeButton :recipe="recipe" class="mt-5 w-full" />
+        <div class="mt-2 grid grid-cols-2 gap-2">
           <BaseButton variant="secondary" @click="status = 'form'">Edit</BaseButton>
           <BaseButton variant="secondary" @click="generate">↻ Regenerate</BaseButton>
         </div>
@@ -97,9 +106,11 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import RecipesTabs from '@/components/recipes/RecipesTabs.vue'
+import SaveRecipeButton from '@/components/recipeBook/SaveRecipeButton.vue'
 import ChefPreferences from '@/components/sousChef/ChefPreferences.vue'
 import ChefProgress from '@/components/sousChef/ChefProgress.vue'
 import ChefRequestSummary from '@/components/sousChef/ChefRequestSummary.vue'
@@ -108,6 +119,7 @@ import IngredientPicker from '@/components/sousChef/IngredientPicker.vue'
 import { generateRecipe } from '@/services/sousChef'
 import { usePantryStore } from '@/stores/pantry'
 import { useProfilesStore } from '@/stores/profiles'
+import { useRecipeBookStore } from '@/stores/recipeBook'
 import { buildRequest, constraintBadges } from '@/utils/sousChef'
 
 // status: 'form' (choose leftovers) → 'loading' → 'done' (recipe) or 'error'
@@ -121,6 +133,7 @@ const PROGRESS = { form: 0, loading: 2, error: 2, done: 2 }
 
 const pantry = usePantryStore()
 const profiles = useProfilesStore()
+const book = useRecipeBookStore()
 const profile = computed(() => profiles.activeProfile)
 const today = new Date()
 
