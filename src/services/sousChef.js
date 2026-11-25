@@ -5,6 +5,7 @@
 // Without a key the built-in generator (src/utils/localChef.js) answers instead.
 
 import { createLocalRecipe } from '@/utils/localChef'
+import { violatesProfile } from '@/utils/recipes'
 import { buildPrompt, normalizeRecipe } from '@/utils/sousChef'
 
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
@@ -56,13 +57,23 @@ async function askGenAi(request, signal) {
   }
 }
 
-/** Returns a structured recipe for the request, or throws a SousChefError. */
+/**
+ * Returns a structured recipe for the request, or throws a SousChefError. The recipe is
+ * checked against the profile too, because the GenAI API may ignore a constraint.
+ */
 export async function generateRecipe(request, { signal } = {}) {
   const online = usesGenAiApi()
   const raw = online ? await askGenAi(request, signal) : createLocalRecipe(request)
+  let recipe
   try {
-    return normalizeRecipe(raw, request, online ? 'genai' : 'local')
+    recipe = normalizeRecipe(raw, request, online ? 'genai' : 'local')
   } catch {
     throw new SousChefError('The Sous-Chef returned an incomplete recipe. Try again.')
   }
+  if (violatesProfile(recipe, request.profile)) {
+    throw new SousChefError(
+      `The Sous-Chef suggested an ingredient that does not fit the ${request.profile.name} profile. Try again.`,
+    )
+  }
+  return recipe
 }

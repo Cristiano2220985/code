@@ -1,5 +1,10 @@
 // US-19: pure helpers for recipe discovery (no Vue, no network).
 
+import { DIETARY_LIFESTYLES, FOOD_ALLERGENS } from '@/constants/profileOptions'
+
+const optionLabel = (options, value) =>
+  options.find((option) => option.value === value)?.label ?? value
+
 // Singular, lower case and single spaces, so "Carrots" matches "carrot".
 export function normalizeIngredient(name) {
   const words = String(name ?? '')
@@ -271,17 +276,20 @@ export function isVeganRecipe(recipe) {
   )
 }
 
+// Why an ingredient does not fit the profile (e.g. "Vegetarian lifestyle"), or '' when it fits.
+export function profileConflict(name, profile) {
+  if (!profile) return ''
+  const breaks = (rules) => (value) =>
+    (rules[value] ?? []).some((group) => ingredientInGroup(name, group))
+  const lifestyle = (profile.lifestyles ?? []).find(breaks(LIFESTYLE_RULES))
+  if (lifestyle) return `${optionLabel(DIETARY_LIFESTYLES, lifestyle)} lifestyle`
+  const allergy = (profile.allergies ?? []).find(breaks(ALLERGEN_RULES))
+  if (allergy) return `${optionLabel(FOOD_ALLERGENS, allergy)} allergy`
+  const excluded = (profile.excludedIngredients ?? []).find((term) => containsTerm(name, term))
+  return excluded ? `excluded ingredient (${excluded})` : ''
+}
+
 // True when the recipe breaks the profile's lifestyles, allergies or excluded ingredients.
 export function violatesProfile(recipe, profile) {
-  if (!profile) return false
-  const groups = new Set([
-    ...(profile.lifestyles ?? []).flatMap((value) => LIFESTYLE_RULES[value] ?? []),
-    ...(profile.allergies ?? []).flatMap((value) => ALLERGEN_RULES[value] ?? []),
-  ])
-  const excluded = profile.excludedIngredients ?? []
-  return recipe.ingredients.some(
-    (ingredient) =>
-      [...groups].some((group) => ingredientInGroup(ingredient.name, group)) ||
-      excluded.some((term) => containsTerm(ingredient.name, term)),
-  )
+  return recipe.ingredients.some((ingredient) => Boolean(profileConflict(ingredient.name, profile)))
 }

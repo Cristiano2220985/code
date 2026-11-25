@@ -1,6 +1,7 @@
 <!--
-  US-28: GenAI Sous-Chef. The selected leftovers and the serving size are sent to a GenAI API,
-  which returns an original recipe with times, portions, measurements and steps.
+  US-28: GenAI Sous-Chef. The selected leftovers, the active profile's dietary constraints and
+  the serving size are sent to a GenAI API, which returns an original recipe with times,
+  portions, measurements and steps.
 -->
 <template>
   <DashboardLayout>
@@ -24,10 +25,15 @@
           :items="pantry.items"
           :today="today"
         />
-        <ChefPreferences v-model:servings="servings" v-model:note="note" :profile="profile" />
+        <ChefPreferences
+          v-model:servings="servings"
+          v-model:note="note"
+          :profile="profile"
+          :removed="request.removed"
+        />
 
         <p v-if="!canGenerate" class="mt-5 text-xs text-neutral-500">
-          ⓘ Select at least one ingredient to continue.
+          ⓘ Select at least one ingredient that fits the {{ profile.name }} profile to continue.
         </p>
         <BaseButton
           type="submit"
@@ -35,7 +41,7 @@
           class="mt-3 w-full"
           :disabled="!canGenerate"
         >
-          Generate Recipe · {{ request.ingredients.length }} selected
+          Generate Recipe · {{ request.ingredients.length }} to use
         </BaseButton>
       </form>
 
@@ -67,7 +73,19 @@
       </section>
 
       <section v-else class="mt-5">
-        <GeneratedRecipe :recipe="recipe" :profile-name="profile.name" />
+        <GeneratedRecipe :recipe="recipe" :profile-name="sentRequest.profile.name">
+          <template #badges>
+            <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Dietary constraints respected">
+              <li
+                v-for="badge in constraintBadges(sentRequest.profile)"
+                :key="badge"
+                class="rounded border border-neutral-300 px-2 py-0.5 text-[11px] text-neutral-600"
+              >
+                ✓ {{ badge }}
+              </li>
+            </ul>
+          </template>
+        </GeneratedRecipe>
         <div class="mt-5 grid grid-cols-2 gap-2">
           <BaseButton variant="secondary" @click="status = 'form'">Edit</BaseButton>
           <BaseButton variant="secondary" @click="generate">↻ Regenerate</BaseButton>
@@ -78,7 +96,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import RecipesTabs from '@/components/recipes/RecipesTabs.vue'
@@ -90,7 +108,7 @@ import IngredientPicker from '@/components/sousChef/IngredientPicker.vue'
 import { generateRecipe } from '@/services/sousChef'
 import { usePantryStore } from '@/stores/pantry'
 import { useProfilesStore } from '@/stores/profiles'
-import { buildRequest } from '@/utils/sousChef'
+import { buildRequest, constraintBadges } from '@/utils/sousChef'
 
 // status: 'form' (choose leftovers) → 'loading' → 'done' (recipe) or 'error'
 const TITLES = {
@@ -123,6 +141,7 @@ const request = computed(() =>
     scraps: scraps.value,
     servings: servings.value,
     note: note.value,
+    profile: profile.value,
   }),
 )
 const canGenerate = computed(() => request.value.ingredients.length > 0)
@@ -157,6 +176,18 @@ function cancel() {
   status.value = 'form'
   announcement.value = ''
 }
+
+// Switching profile changes the constraints and the default servings, so the user goes
+// back to the form (keeping the selected leftovers) to generate a recipe for the new profile.
+watch(
+  () => profiles.activeProfileId,
+  () => {
+    if (!profile.value) return
+    controller?.abort()
+    servings.value = profile.value.servings
+    status.value = 'form'
+  },
+)
 
 onBeforeUnmount(() => controller?.abort())
 </script>

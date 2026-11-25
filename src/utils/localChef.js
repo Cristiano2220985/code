@@ -2,7 +2,7 @@
 // It returns the same JSON shape as the GenAI API, so the app reads both answers the same way.
 // The result only depends on the request, which keeps the app usable offline and in tests.
 
-import { ingredientInGroup, normalizeIngredient } from '@/utils/recipes'
+import { ingredientInGroup, normalizeIngredient, profileConflict } from '@/utils/recipes'
 
 const GRAINS = ['rice', 'pasta', 'spaghetti', 'noodle', 'quinoa', 'couscous', 'bulgur', 'potato']
 const PLANT_PROTEINS = ['egg', 'tofu', 'tempeh', 'bean', 'lentil', 'chickpea']
@@ -62,7 +62,7 @@ const joinNames = (names) =>
 
 const lower = (names) => joinNames(names.map((name) => name.toLowerCase()))
 
-// Extra staples the recipe may need; `staples` lets callers leave some of them out.
+// Extra staples the recipe may need (only the ones that fit the profile are used).
 export const STAPLES = [
   { name: 'Olive oil', measure: (servings) => `${Math.max(1, Math.round(servings / 2))} tbsp` },
   { name: 'Salt and pepper', measure: () => 'to taste' },
@@ -128,7 +128,9 @@ export function createLocalRecipe(request, staples = STAPLES) {
     cookMinutes: steps.slice(1).reduce((sum, step) => sum + step.minutes, 0),
     ingredients: [
       ...leftovers.map(({ name, measure }) => ({ name, quantity: measure })),
-      ...staples.map((staple) => ({ name: staple.name, quantity: staple.measure(servings) })),
+      ...staples
+        .filter((staple) => !profileConflict(staple.name, request.profile))
+        .map((staple) => ({ name: staple.name, quantity: staple.measure(servings) })),
     ],
     steps,
   }

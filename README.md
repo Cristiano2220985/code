@@ -142,6 +142,11 @@ items (items expiring within 48 hours are listed first under **Use soon**) and/o
 extra scraps that are not in the pantry, adjust the servings (the active profile's default)
 and tap **Generate Recipe**. The recipe has preparation and cooking times, servings,
 ingredient measurements (leftovers are tagged) and step-by-step instructions.
+The recipe follows the active profile: its lifestyles, allergies and excluded ingredients are
+sent to the GenAI API and shown before generating. Selected leftovers that break the profile
+(e.g. Chicken for a Vegetarian profile) are removed with a warning, and a generated recipe
+that still breaks the profile is rejected (the same rules as US-19, in `src/utils/recipes.js`).
+Switching profile updates the constraints and the default servings.
 **Regenerate** asks for another recipe with the same selection; if the request fails the
 selection is kept and **Try again** repeats it.
 

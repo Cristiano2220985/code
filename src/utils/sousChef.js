@@ -1,9 +1,10 @@
 // US-28 (GenAI Sous-Chef): pure helpers to build the request and read the generated recipe
 // (no Vue, no network).
 
+import { DIETARY_LIFESTYLES, FOOD_ALLERGENS } from '@/constants/profileOptions'
 import { daysUntilExpiration, UNIT_LABELS } from '@/utils/pantry'
 import { generateId } from '@/utils/profile'
-import { normalizeIngredient } from '@/utils/recipes'
+import { normalizeIngredient, profileConflict } from '@/utils/recipes'
 
 // Same rule as the pantry alert tray: expires today or tomorrow (within 48 hours).
 export function isUseSoon(item, today = new Date()) {
@@ -21,18 +22,70 @@ export function groupPantryItems(items, today = new Date()) {
 
 export const quantityLabel = (item) => `${item.quantity} ${UNIT_LABELS[item.unit] ?? item.unit}`
 
+const labelsFor = (values = [], options) =>
+  values.map((value) => options.find((option) => option.value === value)?.label ?? value)
+
+// Dietary constraints of the active profile, as shown to the user and sent to the GenAI API.
+export function profileConstraints(profile) {
+  return {
+    lifestyles: labelsFor(profile?.lifestyles, DIETARY_LIFESTYLES),
+    allergies: labelsFor(profile?.allergies, FOOD_ALLERGENS),
+    excluded: [...(profile?.excludedIngredients ?? [])],
+  }
+}
+
+// Ingredients the recipe must not contain, e.g. ["Peanuts", "Mushrooms"].
+export function mustAvoid(profile) {
+  const { allergies, excluded } = profileConstraints(profile)
+  return [...allergies, ...excluded]
+}
+
+// Short labels shown on the recipe, e.g. "Vegetarian", "Peanuts-free", "No mushrooms".
+export function constraintBadges(profile) {
+  const { lifestyles, allergies, excluded } = profileConstraints(profile)
+  return [
+    ...lifestyles,
+    ...allergies.map((allergy) => `${allergy}-free`),
+    ...excluded.map((name) => `No ${name.toLowerCase()}`),
+  ]
+}
+
 /**
  * Data sent to the GenAI API: the selected pantry items (with what is available), the extra
- * scraps typed by the user, the serving size and an optional note.
+ * scraps typed by the user, the serving size, an optional note and the active profile.
+ * Leftovers that break the profile are left out and listed in `removed` with the reason.
  */
-export function buildRequest({ pantryItems, selectedIds, scraps = [], servings, note = '' }) {
+export function buildRequest({
+  pantryItems,
+  selectedIds,
+  scraps = [],
+  servings,
+  note = '',
+  profile,
+}) {
   const fromPantry = pantryItems
     .filter((item) => selectedIds.includes(item.id))
     .map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit }))
+  const selected = [...fromPantry, ...scraps.map((name) => ({ name }))]
+  const removed = selected
+    .map((ingredient) => ({
+      name: ingredient.name,
+      reason: profileConflict(ingredient.name, profile),
+    }))
+    .filter((ingredient) => ingredient.reason)
   return {
-    ingredients: [...fromPantry, ...scraps.map((name) => ({ name }))],
+    ingredients: selected.filter(
+      (ingredient) => !removed.some((item) => item.name === ingredient.name),
+    ),
+    removed,
     servings,
     note: note.trim(),
+    profile: {
+      name: profile?.name ?? '',
+      lifestyles: [...(profile?.lifestyles ?? [])],
+      allergies: [...(profile?.allergies ?? [])],
+      excludedIngredients: [...(profile?.excludedIngredients ?? [])],
+    },
   }
 }
 
@@ -42,12 +95,23 @@ function describeIngredient({ name, quantity, unit }) {
   return quantity ? `- ${name} (${quantity} ${unit} in the pantry)` : `- ${name} (leftover scrap)`
 }
 
+function describeConstraints(profile) {
+  const { lifestyles, allergies, excluded } = profileConstraints(profile)
+  return [
+    `Dietary constraints of the "${profile.name}" profile (never break them, not even in staples):`,
+    `- Lifestyle: ${lifestyles.join(', ') || 'no restriction'}`,
+    `- Allergies: ${allergies.join(', ') || 'none'}`,
+    `- Never use: ${excluded.join(', ') || 'nothing else'}`,
+  ]
+}
+
 export function buildPrompt(request) {
   return [
     "You are the SmartPantry sous-chef. Create ONE original recipe that uses up the user's leftovers.",
     'Leftovers to use (use all of them, without exceeding the available quantities):',
     ...request.ingredients.map(describeIngredient),
     `Servings: ${request.servings}. Scale every quantity to this number of servings.`,
+    ...describeConstraints(request.profile),
     request.note ? `Note from the cook: ${request.note}` : '',
     'You may add common staples (oil, salt, pepper, spices, water, stock) when needed.',
     'Answer only with JSON in this shape, quantities with metric units:',

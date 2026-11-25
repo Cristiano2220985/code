@@ -10,7 +10,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ingredientNames } from '@/utils/sousChef'
+import { ingredientNames, mustAvoid } from '@/utils/sousChef'
 
 const props = defineProps({
   request: { type: Object, required: true },
@@ -20,6 +20,7 @@ const rows = computed(() =>
   [
     { label: 'Ingredients', value: ingredientNames(props.request).join(', ') },
     { label: 'Servings', value: props.request.servings },
+    { label: 'Must avoid', value: mustAvoid(props.request.profile).join(', ') },
     { label: 'Note', value: props.request.note },
   ].filter((row) => row.value),
 )
