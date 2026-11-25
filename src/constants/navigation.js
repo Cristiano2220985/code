@@ -3,6 +3,6 @@
 export const NAV_ITEMS = [
   { label: 'Pantry', routeName: 'pantry', testId: 'nav-pantry', icon: 'pantry' },
   { label: 'Recipes', routeName: 'recipes', testId: 'nav-recipes', icon: 'recipes' },
-  { label: 'Book', routeName: null, testId: 'nav-book', icon: 'book' },
+  { label: 'Book', routeName: 'book', testId: 'nav-book', icon: 'book' },
   { label: 'Settings', routeName: null, testId: 'nav-settings', icon: 'settings' },
 ]

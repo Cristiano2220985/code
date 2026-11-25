@@ -156,14 +156,14 @@ import RecipeCard from '@/components/recipes/RecipeCard.vue'
 import RecipeDetailPanel from '@/components/recipes/RecipeDetailPanel.vue'
 import { usePantryStore } from '@/stores/pantry'
 import { useProfilesStore } from '@/stores/profiles'
-import { useShoppingListStore } from '@/stores/shoppingList'
+import { useAddMissing } from '@/composables/useAddMissing'
 import { findCandidates, loadRecipes } from '@/services/recipes'
 import { daysUntilExpiration, expirationLabel, UNIT_LABELS } from '@/utils/pantry'
 import { matchRecipe, normalizeIngredient, rankMatches, violatesProfile } from '@/utils/recipes'
 
 const pantry = usePantryStore()
 const profiles = useProfilesStore()
-const shoppingList = useShoppingListStore()
+const { message: listMessage, addMissing } = useAddMissing()
 
 const today = new Date()
 const status = ref('idle'),
@@ -172,8 +172,7 @@ const status = ref('idle'),
   hiddenCount = ref(0),
   query = ref(''),
   selected = ref(null),
-  announcement = ref(''),
-  listMessage = ref('')
+  announcement = ref('')
 
 // Same rule as the pantry alert tray: expires today or tomorrow (within 48 hours).
 const isExpiring = (item) => {
@@ -240,22 +239,6 @@ watch(
     if (status.value !== 'idle') search()
   },
 )
-
-function addMissing(match) {
-  let added = 0
-  for (const ingredient of match.missing) {
-    try {
-      shoppingList.addItem(ingredient.name)
-      added++
-    } catch {
-      // Already on the shopping list.
-    }
-  }
-  const skipped = match.missing.length - added
-  listMessage.value = added
-    ? `${added} ${added === 1 ? 'ingredient' : 'ingredients'} added to the shopping list${skipped ? ` (${skipped} already there)` : ''}.`
-    : 'These ingredients are already on the shopping list.'
-}
 
 function closeDetail() {
   selected.value = null

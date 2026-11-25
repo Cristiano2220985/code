@@ -1,5 +1,6 @@
 <!--
   US-19: recipe details with the ingredients in stock, the missing ones and the overlap.
+  US-8: the recipe can be saved to the Recipe Book from here.
   Side panel on desktop, full screen on mobile (same pattern as the shopping list).
 -->
 <template>
@@ -138,12 +139,16 @@
           </div>
         </div>
 
-        <div class="glass m-3 mb-[max(0.75rem,env(safe-area-inset-bottom))] rounded-[28px] p-2">
-          <p v-if="message" role="status" class="px-2 pt-1 pb-2 text-center text-xs text-ink-soft">
+        <div
+          class="glass m-3 mb-[max(0.75rem,env(safe-area-inset-bottom))] flex flex-col gap-2 rounded-[28px] p-2"
+        >
+          <p v-if="message" role="status" class="px-2 pt-1 text-center text-xs text-ink-soft">
             {{ message }}
           </p>
           <p v-else role="status" class="sr-only" />
+          <SaveRecipeButton :recipe="match.recipe" class="w-full" />
           <BaseButton
+            variant="secondary"
             class="w-full"
             :disabled="!match.missing.length"
             @click="$emit('add-missing', match)"
@@ -161,6 +166,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import FoodIcon from '@/components/ui/FoodIcon.vue'
+import SaveRecipeButton from '@/components/recipeBook/SaveRecipeButton.vue'
 import { UNIT_LABELS } from '@/utils/pantry'
 
 const props = defineProps({
