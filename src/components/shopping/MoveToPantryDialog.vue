@@ -5,7 +5,7 @@
 -->
 <template>
   <div
-    class="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 sm:items-center sm:p-6"
+    class="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-[2px] sm:items-center sm:p-6"
     @click.self="$emit('close')"
   >
     <section
@@ -15,13 +15,19 @@
       aria-labelledby="move-to-pantry-title"
       data-testid="shopping-list-transfer-dialog"
       tabindex="-1"
-      class="flex max-h-[95dvh] w-full flex-col overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:max-w-xl sm:rounded-2xl"
+      class="flex max-h-[94dvh] w-full flex-col overflow-y-auto rounded-t-[32px] bg-canvas px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] font-sans text-ink shadow-2xl outline-none sm:max-w-xl sm:rounded-[32px] sm:p-7"
       @keydown="onKeydown"
     >
+      <span class="mx-auto mb-4 h-1.5 w-10 rounded-full bg-ink/15 sm:hidden" aria-hidden="true" />
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h2 id="move-to-pantry-title" class="text-xl font-bold">Move to pantry</h2>
-          <p class="mt-1 text-xs text-neutral-500">
+          <h2
+            id="move-to-pantry-title"
+            class="text-[28px] leading-[1.05] font-semibold tracking-[-0.04em]"
+          >
+            Move to pantry
+          </h2>
+          <p class="mt-1.5 text-sm text-muted">
             Fill in the details of each item before saving it.
           </p>
         </div>
@@ -29,15 +35,13 @@
           type="button"
           aria-label="Close move to pantry"
           data-testid="close-transfer-dialog-button"
-          class="rounded p-2 text-xl hover:bg-neutral-100"
+          class="card pressable flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-xl leading-none"
           @click="$emit('close')"
         >
           ×
         </button>
       </div>
-      <p
-        class="my-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-600"
-      >
+      <p class="my-5 rounded-[20px] bg-tile p-3.5 text-xs leading-relaxed text-ink-soft">
         {{ drafts.length }} {{ drafts.length === 1 ? 'item' : 'items' }} will be added to your
         pantry.
         <template v-if="drafts.some((draft) => draft.scanned)"
@@ -52,24 +56,24 @@
           :key="draft.id"
           data-testid="shopping-list-transfer-item"
           :data-item-name="draft.name"
-          class="mb-3 rounded-xl border border-neutral-200 bg-neutral-50/50 p-4"
+          class="card mb-3 rounded-[26px] bg-surface p-4"
         >
           <legend class="sr-only">{{ draft.name }}</legend>
-          <div class="mb-3 flex items-center gap-2" aria-hidden="true">
+          <div class="mb-4 flex items-center gap-3" aria-hidden="true">
+            <FoodIcon
+              :name="draft.name"
+              :category="draft.category"
+              size="sm"
+              rounded="rounded-[14px]"
+            />
             <span
-              class="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-[10px] font-bold text-white"
-              >{{ index + 1 }}</span
+              class="text-[15px] font-semibold tracking-tight"
+              data-testid="shopping-list-transfer-item-name"
+              >{{ draft.name }}</span
             >
-            <span class="text-sm font-semibold" data-testid="shopping-list-transfer-item-name">{{
-              draft.name
-            }}</span>
             <span
-              class="ml-auto rounded-full border px-2 py-0.5 text-[10px]"
-              :class="
-                draft.scanned
-                  ? 'border-neutral-500 text-neutral-700'
-                  : 'border-dashed border-neutral-400 text-neutral-500'
-              "
+              class="ml-auto rounded-full px-2.5 py-1 text-[11px] font-medium"
+              :class="draft.scanned ? 'bg-lime text-lime-ink' : 'bg-tile text-muted'"
               >{{ draft.scanned ? 'From barcode' : 'Manual' }}</span
             >
           </div>
@@ -77,7 +81,7 @@
             <div v-for="field in FIELDS" :key="field.key" class="min-w-0">
               <label
                 :for="`transfer-${index}-${field.key}`"
-                class="mb-1 block text-xs font-semibold"
+                class="mb-1.5 block px-1 text-xs font-medium text-muted"
                 >{{ field.label }}</label
               >
               <select
@@ -124,18 +128,17 @@
               <p
                 v-if="errors[draft.id]?.[field.key]"
                 :id="`transfer-${index}-${field.key}-error`"
-                class="mt-1 text-xs text-red-700"
+                class="mt-1 px-1 text-xs text-status-today"
               >
                 {{ errors[draft.id][field.key] }}
               </p>
             </div>
           </div>
           <!-- Same as the "Add item" form (US-02) -->
-          <div
-            v-if="draft.creatingCategory"
-            class="mt-3 rounded-lg border border-neutral-300 bg-white p-3"
-          >
-            <label :for="`transfer-${index}-new-category`" class="mb-2 block text-sm font-semibold"
+          <div v-if="draft.creatingCategory" class="mt-4 rounded-[20px] bg-tile p-3.5">
+            <label
+              :for="`transfer-${index}-new-category`"
+              class="mb-2 block px-1 text-sm font-medium"
               >Create new category</label
             >
             <div class="flex gap-2">
@@ -143,7 +146,7 @@
                 :id="`transfer-${index}-new-category`"
                 v-model="draft.newCategory"
                 data-testid="new-category-input"
-                class="field min-w-0 flex-1"
+                class="field min-w-0 flex-1 !bg-surface"
                 placeholder="e.g. Sauces"
                 :aria-invalid="Boolean(draft.categoryError)"
                 @keydown.enter.prevent="addCategory(draft)"
@@ -151,13 +154,17 @@
                 >Add</BaseButton
               >
             </div>
-            <p v-if="draft.categoryError" role="alert" class="mt-1 text-xs text-red-700">
+            <p
+              v-if="draft.categoryError"
+              role="alert"
+              class="mt-1.5 px-1 text-xs text-status-today"
+            >
               {{ draft.categoryError }}
             </p>
-            <p class="mt-2 text-xs text-neutral-500">New categories are saved for future items.</p>
+            <p class="mt-2 px-1 text-xs text-muted">New categories are saved for future items.</p>
           </div>
         </fieldset>
-        <p v-if="saveError" role="alert" class="text-sm text-red-700">{{ saveError }}</p>
+        <p v-if="saveError" role="alert" class="px-1 text-sm text-status-today">{{ saveError }}</p>
         <div class="flex gap-3 pt-3">
           <BaseButton
             variant="secondary"
@@ -177,6 +184,7 @@
 <script setup>
 import { nextTick, onMounted, reactive, ref } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import FoodIcon from '@/components/ui/FoodIcon.vue'
 import { usePantryStore } from '@/stores/pantry'
 import { useShoppingListStore } from '@/stores/shoppingList'
 import { trapDialogTab } from '@/utils/dialogFocus'
@@ -283,12 +291,12 @@ onMounted(() => dialog.value.focus())
 <style scoped>
 @reference "../../css/index.css";
 .field {
-  @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-neutral-900 outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800;
+  @apply h-12 w-full rounded-2xl bg-tile px-3.5 text-ink ring-1 ring-transparent outline-none focus:bg-surface focus:ring-2 focus:ring-ink;
 }
 .field.prefilled {
-  @apply bg-neutral-100;
+  @apply bg-lime/45;
 }
 .field[aria-invalid='true'] {
-  @apply border-red-600;
+  @apply ring-status-today;
 }
 </style>

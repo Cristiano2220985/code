@@ -5,7 +5,7 @@
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+      class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-[2px] sm:items-center sm:p-6"
       @click.self="$emit('close')"
     >
       <section
@@ -15,18 +15,24 @@
         aria-modal="true"
         :aria-labelledby="titleId"
         tabindex="-1"
-        class="w-full max-w-sm rounded-xl bg-white p-5 shadow-xl"
+        class="max-h-[94dvh] w-full overflow-y-auto rounded-t-[32px] bg-canvas px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] font-sans text-ink shadow-2xl outline-none sm:max-w-sm sm:rounded-[32px] sm:p-6"
         @keydown="onKeydown"
       >
+        <span
+          class="mx-auto mb-4 block h-1.5 w-10 rounded-full bg-ink/15 sm:hidden"
+          aria-hidden="true"
+        />
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 :id="titleId" class="text-lg font-bold">{{ title }}</h2>
-            <p v-if="description" class="mt-1 text-xs text-neutral-500">{{ description }}</p>
+            <h2 :id="titleId" class="text-[26px] leading-[1.05] font-semibold tracking-[-0.04em]">
+              {{ title }}
+            </h2>
+            <p v-if="description" class="mt-1.5 text-xs text-muted">{{ description }}</p>
           </div>
           <button
             type="button"
             :aria-label="`Close ${title}`"
-            class="rounded p-1 text-xl leading-none hover:bg-neutral-100"
+            class="card pressable flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-xl leading-none"
             @click="$emit('close')"
           >
             ×

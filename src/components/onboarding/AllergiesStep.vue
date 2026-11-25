@@ -5,7 +5,7 @@
       subtitle="Recipes containing these are filtered out."
     />
     <!-- Alergies -->
-    <p class="mb-2 text-xs font-semibold text-neutral-900">Food allergies</p>
+    <p class="mb-3 text-sm font-medium text-ink">Food allergies</p>
     <div class="flex flex-wrap gap-2" data-testid="allergy-options">
       <SelectableChip
         v-for="option in FOOD_ALLERGENS"
@@ -17,10 +17,10 @@
       />
     </div>
 
-    <label for="excluded-ingredient" class="mt-6 mb-2 block text-xs font-semibold text-neutral-900">
+    <label for="excluded-ingredient" class="mt-8 mb-3 block text-sm font-medium text-ink">
       Excluded ingredients
     </label>
-    <form class="flex gap-2" @submit.prevent="addExcluded">
+    <form class="card flex gap-2 rounded-full bg-surface p-1.5 pl-4" @submit.prevent="addExcluded">
       <input
         id="excluded-ingredient"
         v-model="newIngredient"
@@ -28,18 +28,22 @@
         type="text"
         maxlength="40"
         placeholder="e.g. Mushrooms"
-        class="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-neutral-100 px-3 py-2.5 outline-none focus:border-neutral-800"
+        class="min-w-0 flex-1 bg-transparent py-2 outline-none placeholder:text-muted"
       />
       <BaseButton
         type="submit"
-        variant="secondary"
         data-testid="excluded-ingredient-add"
+        class="!px-5 !py-2.5"
         :disabled="!newIngredient.trim()"
       >
         Add
       </BaseButton>
     </form>
-    <p v-if="error" data-testid="excluded-ingredient-error" class="mt-1.5 text-xs text-red-600">
+    <p
+      v-if="error"
+      data-testid="excluded-ingredient-error"
+      class="mt-2 px-1 text-xs text-status-today"
+    >
       {{ error }}
     </p>
 
@@ -48,12 +52,12 @@
         v-for="ingredient in excludedIngredients"
         :key="ingredient"
         :data-testid="`excluded-${ingredient}`"
-        class="flex items-center gap-1.5 rounded-full border border-neutral-400 px-3.5 py-1.5 text-xs text-neutral-700"
+        class="flex h-10 items-center gap-1 rounded-full bg-ink/[0.06] pr-1.5 pl-4 text-sm text-ink"
       >
         <span>{{ ingredient }}</span>
         <button
           type="button"
-          class="text-neutral-400 hover:text-neutral-800"
+          class="pressable flex h-7 w-7 items-center justify-center rounded-full text-base text-muted hover:bg-surface hover:text-ink"
           :aria-label="`Remove ${ingredient}`"
           :data-testid="`remove-excluded-${ingredient}`"
           @click="removeExcluded(ingredient)"

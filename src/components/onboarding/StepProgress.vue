@@ -1,12 +1,12 @@
 <template>
-  <div class="mb-6" data-testid="step-progress">
-    <p class="mb-2 text-center text-xs text-neutral-500">Step {{ current }} of {{ total }}</p>
+  <div class="mb-7" data-testid="step-progress">
+    <p class="mb-2.5 text-xs font-medium text-muted">Step {{ current }} of {{ total }}</p>
     <div class="flex gap-1.5">
       <span
         v-for="step in total"
         :key="step"
-        class="h-1 flex-1 rounded-full"
-        :class="step <= current ? 'bg-neutral-800' : 'bg-neutral-200'"
+        class="h-1.5 flex-1 rounded-full transition-colors duration-300"
+        :class="step <= current ? 'bg-ink' : 'bg-hairline'"
       />
     </div>
   </div>

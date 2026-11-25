@@ -1,7 +1,9 @@
 <template>
-  <header class="mb-6">
-    <h1 class="text-lg font-bold text-neutral-900">{{ title }}</h1>
-    <p class="mt-1 text-xs text-neutral-500">{{ subtitle }}</p>
+  <header class="mb-7">
+    <h1 class="text-[32px] leading-[1.05] font-semibold tracking-[-0.04em] text-ink">
+      {{ title }}
+    </h1>
+    <p class="mt-2 text-sm text-muted">{{ subtitle }}</p>
   </header>
 </template>
 

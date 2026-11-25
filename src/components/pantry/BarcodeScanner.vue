@@ -10,10 +10,13 @@
   <div data-testid="barcode-scanner-screen">
     <div class="mb-4 flex items-start justify-between gap-3">
       <div>
-        <h2 id="item-dialog-title" class="text-xl font-bold">
+        <h2
+          id="item-dialog-title"
+          class="text-[28px] leading-[1.05] font-semibold tracking-[-0.04em]"
+        >
           {{ view === 'upload' ? 'Upload image' : 'Scan barcode' }}
         </h2>
-        <p class="mt-1 text-xs text-neutral-500">
+        <p class="mt-1.5 text-sm text-muted">
           {{
             view === 'upload'
               ? 'Choose a clear photo of a product barcode.'
@@ -25,7 +28,7 @@
         type="button"
         aria-label="Close barcode scanner"
         data-testid="close-barcode-scanner-button"
-        class="rounded p-2 text-xl hover:bg-neutral-100"
+        class="card pressable flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-xl leading-none"
         @click="$emit('close')"
       >
         ×
@@ -34,23 +37,30 @@
 
     <!-- 1. Camera / messages -->
     <template v-if="view === 'scanner'">
-      <div v-if="problem" class="flex flex-col items-center py-4 text-center">
+      <div
+        v-if="problem"
+        class="card flex flex-col items-center rounded-[26px] bg-surface px-6 py-8 text-center"
+      >
         <span
-          class="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-400 text-lg font-bold"
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-status-today/10 text-lg font-bold text-status-today"
           aria-hidden="true"
           >!</span
         >
-        <p role="alert" class="mt-3 text-base font-bold" :data-testid="`barcode-${state}-message`">
+        <p
+          role="alert"
+          class="mt-4 text-[17px] font-semibold tracking-tight"
+          :data-testid="`barcode-${state}-message`"
+        >
           {{ problem.title }}
         </p>
-        <p class="mt-1 max-w-xs text-xs text-neutral-500">
+        <p class="mt-1 max-w-xs text-xs text-muted">
           {{ problem.description }}
         </p>
       </div>
 
       <template v-else>
         <div
-          class="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl bg-neutral-100"
+          class="relative flex aspect-video items-center justify-center overflow-hidden rounded-[28px] bg-ink"
         >
           <video
             ref="video"
@@ -61,21 +71,24 @@
             aria-label="Camera preview"
           />
           <div
-            class="pointer-events-none absolute inset-x-[15%] inset-y-[25%] rounded-lg border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.25)]"
+            class="pointer-events-none absolute inset-x-[15%] inset-y-[25%] rounded-[18px] border-2 border-lime shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]"
             aria-hidden="true"
           />
         </div>
-        <p role="status" class="mt-2 text-center text-xs text-neutral-500">
+        <p role="status" class="mt-3 text-center text-xs text-muted">
           {{ statusMessage }}
         </p>
       </template>
 
       <!-- 2. Type the barcode number -->
-      <form class="mt-4 rounded-lg border border-neutral-300 p-3" @submit.prevent="lookupTypedCode">
-        <label for="barcode-number" class="mb-2 block text-xs font-semibold text-neutral-600">
+      <form class="mt-5" @submit.prevent="lookupTypedCode">
+        <label for="barcode-number" class="mb-2 block px-1 text-sm font-medium text-ink">
           Or type the barcode number
         </label>
-        <div class="flex gap-2">
+        <div
+          class="card flex items-center gap-2 rounded-full bg-surface p-1.5 pl-4 ring-1"
+          :class="typedCodeError ? 'ring-status-today' : 'ring-transparent'"
+        >
           <input
             id="barcode-number"
             v-model="typedCode"
@@ -83,14 +96,18 @@
             inputmode="numeric"
             autocomplete="off"
             placeholder="e.g. 3017620422003"
-            class="field min-w-0 flex-1"
+            class="min-w-0 flex-1 bg-transparent py-2 outline-none placeholder:text-muted"
             :aria-invalid="Boolean(typedCodeError)"
           />
-          <BaseButton type="submit" data-testid="barcode-lookup-button" :disabled="searching"
+          <BaseButton
+            type="submit"
+            data-testid="barcode-lookup-button"
+            class="!px-5 !py-2.5"
+            :disabled="searching"
             >Look up</BaseButton
           >
         </div>
-        <p v-if="typedCodeError" role="alert" class="mt-1 text-xs text-red-700">
+        <p v-if="typedCodeError" role="alert" class="mt-2 px-1 text-xs text-status-today">
           {{ typedCodeError }}
         </p>
       </form>
@@ -100,10 +117,14 @@
     <template v-else>
       <label
         for="barcode-image"
-        class="flex cursor-pointer flex-col items-center rounded-xl border border-dashed border-neutral-400 p-8 text-center hover:bg-neutral-50"
+        class="pressable flex cursor-pointer flex-col items-center rounded-[26px] border border-dashed border-hairline bg-surface/60 p-8 text-center hover:bg-surface"
       >
-        <span class="font-mono text-2xl tracking-tighter" aria-hidden="true">||| || |||</span>
-        <span class="mt-2 text-xs text-neutral-500">Supports JPG and PNG files</span>
+        <span
+          class="card flex h-14 w-14 items-center justify-center rounded-[20px] bg-surface"
+          aria-hidden="true"
+          ><AppIcon name="barcode" class="h-6 w-6"
+        /></span>
+        <span class="mt-3 text-xs text-muted">Supports JPG and PNG files</span>
       </label>
       <input
         id="barcode-image"
@@ -121,13 +142,13 @@
         @click="fileInput.click()"
         >{{ searching ? 'Reading image…' : 'Choose image' }}</BaseButton
       >
-      <p v-if="uploadError" role="alert" class="mt-2 text-xs text-red-700">
+      <p v-if="uploadError" role="alert" class="mt-2 px-1 text-xs text-status-today">
         {{ uploadError }}
       </p>
     </template>
 
     <!-- Fallback options -->
-    <div data-testid="barcode-fallback-options" class="mt-4 flex flex-col gap-2 sm:flex-row">
+    <div data-testid="barcode-fallback-options" class="mt-5 flex flex-col gap-2 sm:flex-row">
       <BaseButton
         v-if="view === 'scanner'"
         :variant="problem ? 'primary' : 'secondary'"
@@ -144,7 +165,7 @@
         >{{ view === 'upload' ? 'Enter manually instead' : 'Enter manually' }}</BaseButton
       >
     </div>
-    <p v-if="problem" class="mt-3 text-center text-xs text-neutral-500">
+    <p v-if="problem" class="mt-3 text-center text-xs text-muted">
       You can continue without scanning.
     </p>
   </div>
@@ -154,6 +175,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { BarcodeFormat, DecodeHintType } from '@zxing/library'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { findProductByBarcode, isValidBarcode } from '@/services/products'
 
@@ -306,9 +328,9 @@ onBeforeUnmount(() => {
 <style scoped>
 @reference "../../css/index.css";
 .field {
-  @apply w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2.5 text-neutral-900 outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800;
+  @apply h-12 w-full rounded-2xl bg-surface px-3.5 text-ink ring-1 ring-hairline outline-none placeholder:text-muted focus:ring-2 focus:ring-ink;
 }
 .field[aria-invalid='true'] {
-  @apply border-red-600;
+  @apply ring-status-today;
 }
 </style>

@@ -5,9 +5,7 @@
       subtitle="You can add more profiles later."
     />
 
-    <label for="profile-name" class="mb-1.5 block text-xs font-semibold text-neutral-900">
-      Profile name
-    </label>
+    <label for="profile-name" class="mb-2 block text-sm font-medium text-ink"> Profile name </label>
     <input
       id="profile-name"
       v-model="name"
@@ -15,18 +13,18 @@
       type="text"
       maxlength="40"
       placeholder="e.g. Family"
-      class="w-full rounded-lg border bg-neutral-100 px-3 py-2.5 outline-none focus:border-neutral-800"
-      :class="error ? 'border-red-500' : 'border-neutral-300'"
+      class="card h-13 w-full rounded-2xl bg-surface px-4 ring-1 outline-none placeholder:text-muted focus:ring-2 focus:ring-ink"
+      :class="error ? 'ring-status-today' : 'ring-transparent'"
       :aria-invalid="Boolean(error)"
     />
-    <p v-if="error" data-testid="profile-name-error" class="mt-1.5 text-xs text-red-600">
+    <p v-if="error" data-testid="profile-name-error" class="mt-2 text-xs text-status-today">
       {{ error }}
     </p>
 
-    <div class="mt-8 flex items-center justify-between">
+    <div class="mt-8 flex items-center justify-between gap-4">
       <div>
-        <p class="text-xs font-semibold text-neutral-900">Typical servings</p>
-        <p class="text-xs text-neutral-500">People usually eating</p>
+        <p class="text-sm font-medium text-ink">Typical servings</p>
+        <p class="mt-0.5 text-xs text-muted">People usually eating</p>
       </div>
       <ServingsCounter v-model="servings" :min="SERVINGS_MIN" :max="SERVINGS_MAX" />
     </div>
