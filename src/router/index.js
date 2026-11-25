@@ -25,6 +25,13 @@ const routes = [
     meta: { requiresProfile: true },
   },
   {
+    path: '/recipes/sous-chef',
+    name: 'sous-chef',
+    component: () => import('../pages/SousChefPage.vue'),
+    // navSection keeps "Recipes" highlighted in the main navigation.
+    meta: { requiresProfile: true, navSection: 'recipes' },
+  },
+  {
     path: '/book',
     name: 'book',
     component: () => import('../pages/RecipeBookPage.vue'),

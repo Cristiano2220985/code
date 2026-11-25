@@ -135,6 +135,31 @@ The free API filters by one ingredient at a time, so a search makes one request 
 pantry item and then loads the details of the best candidates (12 results at most).
 An internet connection is needed to search.
 
+## US-28: GenAI Sous-Chef
+
+**Recipes → ✦ GenAI Sous-Chef** turns leftovers into an original recipe. Select pantry
+items (items expiring within 48 hours are listed first under **Use soon**) and/or type
+extra scraps that are not in the pantry, adjust the servings (the active profile's default)
+and tap **Generate Recipe**. The recipe has preparation and cooking times, servings,
+ingredient measurements (leftovers are tagged) and step-by-step instructions.
+**Regenerate** asks for another recipe with the same selection; if the request fails the
+selection is kept and **Try again** repeats it.
+
+The recipe comes from [Google Gemini](https://ai.google.dev/gemini-api/docs). Create a free
+key at https://aistudio.google.com/apikey and put it in `.env.local` (ignored by Git), then
+restart `npm run dev`:
+
+```sh
+VITE_GENAI_API_KEY=your-key
+# optional, default gemini-2.5-flash
+VITE_GENAI_MODEL=gemini-2.5-flash
+```
+
+Without a key, a built-in generator (`src/utils/localChef.js`) creates the recipe from the
+same request, without internet. Its result is always the same for the same selection, which
+also keeps the Katalon tests repeatable. The key is used by the browser, so only use a
+personal development key.
+
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).

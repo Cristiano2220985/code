@@ -5,6 +5,7 @@
 <template>
   <DashboardLayout>
     <div data-testid="recipe-discovery-screen">
+      <RecipesTabs />
       <h1 class="text-xl font-bold md:text-2xl">Discover recipes</h1>
       <p class="mt-1 text-sm text-neutral-500">
         Find meals you can prepare with the ingredients you already have.
@@ -157,6 +158,7 @@ import { computed, ref, watch } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import RecipeCard from '@/components/recipes/RecipeCard.vue'
+import RecipesTabs from '@/components/recipes/RecipesTabs.vue'
 import RecipeDetailPanel from '@/components/recipes/RecipeDetailPanel.vue'
 import { usePantryStore } from '@/stores/pantry'
 import { useProfilesStore } from '@/stores/profiles'
