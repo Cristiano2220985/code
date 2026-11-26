@@ -5,7 +5,10 @@
 -->
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex justify-end bg-black/30" @click.self="$emit('close')">
+    <div
+      class="fixed inset-0 z-50 flex justify-end bg-black/35 backdrop-blur-[2px]"
+      @click.self="$emit('close')"
+    >
       <section
         ref="panel"
         role="dialog"
@@ -13,7 +16,7 @@
         aria-labelledby="shopping-list-title"
         data-testid="shopping-list-screen"
         tabindex="-1"
-        class="flex h-dvh w-full flex-col bg-white shadow-xl md:max-w-sm"
+        class="flex h-dvh w-full flex-col overflow-hidden bg-canvas font-sans text-ink shadow-2xl outline-none md:max-w-md"
         @keydown="onKeydown"
       >
         <ShoppingScanner
@@ -23,58 +26,66 @@
           @close="showScanner(null)"
         />
         <template v-else>
-          <div class="flex items-start justify-between gap-3 border-b border-neutral-200 p-5">
+          <div
+            class="flex items-start justify-between gap-3 px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-2"
+          >
             <div>
-              <h2 id="shopping-list-title" class="text-xl font-bold">Shopping list</h2>
-              <p class="mt-1 text-xs text-neutral-500">Keep track of everything you need to buy.</p>
+              <p class="text-sm text-muted">Keep track of everything you need to buy.</p>
+              <h2
+                id="shopping-list-title"
+                class="mt-1 text-[34px] leading-[1.05] font-semibold tracking-[-0.045em]"
+              >
+                Shopping list
+              </h2>
             </div>
             <button
               type="button"
               aria-label="Close shopping list"
               data-testid="close-shopping-list-button"
-              class="rounded p-2 text-xl hover:bg-neutral-100"
+              class="card pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-xl leading-none"
               @click="$emit('close')"
             >
               ×
             </button>
           </div>
 
-          <div class="relative flex-1 overflow-y-auto p-5">
+          <div class="relative flex-1 overflow-y-auto px-5 pt-3 pb-6">
             <form novalidate @submit.prevent="addItem">
-              <label for="shopping-item-name" class="mb-1 block text-sm font-semibold"
-                >Item name</label
+              <label for="shopping-item-name" class="sr-only">Item name</label>
+              <div
+                class="card flex items-center gap-2 rounded-full bg-surface p-1.5 pl-4 ring-1"
+                :class="addError ? 'ring-status-today' : 'ring-transparent'"
               >
-              <div class="flex gap-2">
                 <input
                   id="shopping-item-name"
                   v-model="newItem"
                   data-testid="item-name-input"
                   autocomplete="off"
                   placeholder="e.g. Eggs"
-                  class="field min-w-0 flex-1"
+                  class="min-w-0 flex-1 bg-transparent py-2 outline-none placeholder:text-muted"
                   :aria-invalid="Boolean(addError)"
                   @input="addError = ''"
                   :aria-describedby="addError ? 'shopping-add-error' : undefined"
                 />
-                <BaseButton type="submit" data-testid="add-button">Add</BaseButton>
+                <BaseButton type="submit" data-testid="add-button" class="!px-5 !py-2.5"
+                  >Add</BaseButton
+                >
               </div>
               <p
                 v-if="addError"
                 id="shopping-add-error"
                 role="alert"
-                class="mt-1 text-xs text-red-700"
+                class="mt-2 px-1 text-xs text-status-today"
               >
                 {{ addError }}
               </p>
             </form>
 
-            <div
-              class="mt-5 flex justify-between border-b border-neutral-200 pb-2 text-sm font-semibold"
-            >
-              <h3>
-                To buy <span class="font-normal text-neutral-500">({{ store.items.length }})</span>
+            <div class="mt-6 mb-3 flex items-baseline justify-between px-1">
+              <h3 class="text-[17px] font-semibold tracking-tight">
+                To buy <span class="font-normal text-muted">({{ store.items.length }})</span>
               </h3>
-              <span v-if="store.items.length" class="text-xs font-normal text-neutral-500"
+              <span v-if="store.items.length" class="text-xs text-muted"
                 >{{ store.checkedItems.length }} selected</span
               >
             </div>
@@ -82,59 +93,51 @@
             <div
               v-if="!store.items.length"
               data-testid="shopping-list-empty-state"
-              class="flex flex-col items-center py-10 text-center"
+              class="flex flex-col items-center rounded-[26px] border border-dashed border-hairline px-6 py-10 text-center"
             >
-              <svg
-                class="h-8 w-8 text-neutral-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                aria-hidden="true"
+              <span
+                class="card flex h-14 w-14 items-center justify-center rounded-[20px] bg-surface"
               >
-                <path
-                  d="M3 4h2l2.4 11h11.2L21 7H6.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-                <circle cx="9" cy="19.5" r="1.3" />
-                <circle cx="17" cy="19.5" r="1.3" />
-              </svg>
-              <p class="mt-3 text-sm font-semibold">Your shopping list is empty</p>
-              <p class="mt-1 max-w-60 text-xs text-neutral-500">
+                <AppIcon name="cart" class="h-6 w-6" />
+              </span>
+              <p class="mt-4 text-sm font-semibold">Your shopping list is empty</p>
+              <p class="mt-1 max-w-60 text-xs text-muted">
                 Add an item above. When you buy it, scan it or tick it to move it to your pantry.
               </p>
             </div>
 
             <template v-else>
-              <ul aria-label="Items to buy">
+              <ul class="grid gap-2" aria-label="Items to buy">
                 <li
                   v-for="item in store.items"
                   :key="item.id"
                   data-testid="shopping-list-item-row"
-                  class="flex items-center gap-3 border-b border-neutral-100 py-3"
+                  class="card flex items-center gap-3 rounded-[22px] bg-surface p-2 pr-2.5 ring-1 transition"
+                  :class="item.checked ? 'ring-ink' : 'ring-transparent'"
                 >
                   <input
                     :id="`shopping-item-${item.id}`"
                     type="checkbox"
                     data-testid="shopping-list-item-checkbox"
-                    class="h-4 w-4 shrink-0 accent-neutral-800"
+                    class="ml-2 h-5 w-5 shrink-0 cursor-pointer accent-ink"
                     :checked="item.checked"
                     @change="store.toggleItem(item.id)"
                   />
+                  <FoodIcon :name="item.name" size="sm" rounded="rounded-[14px]" />
                   <label
                     :for="`shopping-item-${item.id}`"
                     class="min-w-0 flex-1 cursor-pointer"
                     :data-testid="`shopping-list-item-${item.name}`"
                   >
                     <span
-                      class="block break-words text-sm font-semibold"
+                      class="block text-[15px] font-semibold break-words"
                       data-testid="shopping-list-item-name"
                       >{{ item.name }}</span
                     >
-                    <span class="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
+                    <span class="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                       <template v-if="item.scanned">
-                        <span class="rounded-full border border-neutral-400 px-1.5 text-[10px]"
+                        <span
+                          class="rounded-full bg-lime px-2 py-px text-[10.5px] font-medium text-lime-ink"
                           >Scanned</span
                         >{{ quantityLabel(item.scanned) }}
                       </template>
@@ -144,11 +147,9 @@
                   <button
                     type="button"
                     data-testid="shopping-list-item-scan-button"
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border"
+                    class="pressable flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
                     :class="
-                      item.scanned
-                        ? 'border-neutral-800 bg-neutral-800 text-white'
-                        : 'border-neutral-400 text-neutral-700 hover:border-neutral-800'
+                      item.scanned ? 'bg-ink text-white' : 'bg-tile text-ink hover:bg-hairline'
                     "
                     :aria-label="item.scanned ? `Scan ${item.name} again` : `Scan ${item.name}`"
                     @click="showScanner(item)"
@@ -166,11 +167,11 @@
                     </svg>
                     <svg
                       v-else
-                      class="h-4 w-4"
+                      class="h-4.5 w-4.5"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="2"
+                      stroke-width="1.8"
                       aria-hidden="true"
                     >
                       <path d="M4 8h3l2-3h6l2 3h3v11H4z" stroke-linejoin="round" />
@@ -180,7 +181,7 @@
                   <button
                     type="button"
                     data-testid="shopping-list-item-remove-button"
-                    class="rounded p-1 text-neutral-400 hover:text-neutral-800"
+                    class="pressable flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm text-muted hover:bg-tile hover:text-ink"
                     :aria-label="`Remove ${item.name}`"
                     @click="store.removeItem(item.id)"
                   >
@@ -188,7 +189,7 @@
                   </button>
                 </li>
               </ul>
-              <p class="mt-3 text-xs text-neutral-500">
+              <p class="mt-3 px-1 text-xs text-muted">
                 Tap the camera to scan a product as you buy it, or tick the box.
               </p>
             </template>
@@ -196,10 +197,10 @@
             <div
               v-if="scanToast"
               role="status"
-              class="sticky bottom-0 mt-6 flex items-center gap-3 rounded-xl bg-neutral-800 p-3 text-white shadow-lg"
+              class="sticky bottom-0 mt-6 flex items-center gap-3 rounded-[22px] bg-ink p-3 pl-3.5 text-white shadow-[0_18px_40px_-16px_rgb(0_0_0/0.55)]"
             >
               <span
-                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-neutral-800"
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-lime text-sm text-lime-ink"
                 aria-hidden="true"
                 >✓</span
               >
@@ -207,12 +208,12 @@
                 <p class="text-sm font-semibold" data-testid="shopping-list-scan-message">
                   {{ scanToast.name }} scanned
                 </p>
-                <p class="text-xs text-neutral-300">{{ scanToast.detail }}</p>
+                <p class="text-xs text-white/60">{{ scanToast.detail }}</p>
               </div>
               <button
                 type="button"
                 data-testid="shopping-list-undo-scan-button"
-                class="text-xs font-semibold underline"
+                class="pressable rounded-full bg-white/12 px-3.5 py-2 text-xs font-semibold hover:bg-white/20"
                 @click="undoScan"
               >
                 Undo
@@ -220,7 +221,7 @@
             </div>
           </div>
 
-          <div class="border-t border-neutral-200 p-5">
+          <div class="glass m-3 mb-[max(0.75rem,env(safe-area-inset-bottom))] rounded-[28px] p-2">
             <BaseButton
               class="w-full"
               data-testid="move-to-pantry-button"
@@ -230,7 +231,7 @@
                 ({{ store.checkedItems.length }})</template
               ></BaseButton
             >
-            <p class="mt-2 text-center text-xs text-neutral-500">
+            <p class="px-2 pt-2 pb-1 text-center text-xs text-ink-soft">
               Only scanned or checked items will be moved. The rest stays on the list.
             </p>
           </div>
@@ -250,6 +251,8 @@
 <script setup>
 import { defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import FoodIcon from '@/components/ui/FoodIcon.vue'
 import MoveToPantryDialog from '@/components/shopping/MoveToPantryDialog.vue'
 // Loaded only when a camera button is tapped (the barcode library is large).
 const ShoppingScanner = defineAsyncComponent(
@@ -346,9 +349,12 @@ onBeforeUnmount(() => {
 <style scoped>
 @reference "../../css/index.css";
 .field {
-  @apply w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2.5 text-neutral-900 outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800;
+  @apply h-12 w-full rounded-2xl bg-tile px-3.5 text-ink ring-1 ring-transparent outline-none focus:bg-surface focus:ring-2 focus:ring-ink;
+}
+.field.prefilled {
+  @apply bg-lime/45;
 }
 .field[aria-invalid='true'] {
-  @apply border-red-600;
+  @apply ring-status-today;
 }
 </style>

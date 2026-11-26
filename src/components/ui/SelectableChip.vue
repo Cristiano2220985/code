@@ -2,11 +2,9 @@
   <button
     type="button"
     :aria-pressed="selected"
-    class="rounded-full border px-3.5 py-1.5 text-xs transition-colors"
+    class="pressable h-11 rounded-full px-4 text-sm"
     :class="
-      selected
-        ? 'border-neutral-800 bg-neutral-800 font-semibold text-white'
-        : 'border-neutral-400 bg-white text-neutral-700 hover:bg-neutral-100'
+      selected ? 'bg-ink font-medium text-white' : 'card bg-surface text-ink-soft hover:text-ink'
     "
   >
     {{ label }}

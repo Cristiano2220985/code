@@ -1,10 +1,10 @@
 <!-- Main app shell: sidebar (desktop), header with profile switcher and page content. -->
 <template>
-  <div class="flex min-h-screen bg-white">
+  <div class="flex min-h-screen bg-canvas">
     <AppSidebar />
     <div class="flex min-w-0 flex-1 flex-col">
       <AppHeader />
-      <main class="flex-1 p-4 pb-24 md:p-6" data-testid="dashboard-screen">
+      <main class="flex-1 px-5 pt-2 pb-32 md:px-8 md:pb-10" data-testid="dashboard-screen">
         <slot />
       </main>
     </div>

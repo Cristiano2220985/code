@@ -79,14 +79,19 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="offline || canInstall"
-    class="flex flex-wrap items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-2 md:px-6"
+    class="flex flex-wrap items-center gap-x-3 gap-y-2 bg-canvas px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1 md:px-8"
   >
-    <p v-if="offline" role="status" data-testid="offline-status" class="text-sm text-neutral-700">
+    <p
+      v-if="offline"
+      role="status"
+      data-testid="offline-status"
+      class="flex items-center gap-2 rounded-full bg-surface py-1.5 pr-3.5 pl-3 text-xs text-ink-soft before:h-2 before:w-2 before:rounded-full before:bg-status-soon before:content-['']"
+    >
       <strong>Offline.</strong> You can use your pantry and shopping list.
     </p>
     <BaseButton
       v-if="canInstall"
-      class="ml-auto"
+      class="ml-auto !px-4 !py-2 !text-xs"
       data-testid="install-app-button"
       :aria-expanded="canShowHelp ? helpOpen : undefined"
       :aria-controls="canShowHelp ? 'pwa-install-help' : undefined"
@@ -98,7 +103,7 @@ onBeforeUnmount(() => {
       v-if="canInstall && canShowHelp"
       v-show="helpOpen"
       id="pwa-install-help"
-      class="basis-full text-sm text-neutral-700"
+      class="card basis-full rounded-[20px] bg-surface p-3.5 text-xs leading-relaxed text-ink-soft"
     >
       {{ installHelp }}
     </p>

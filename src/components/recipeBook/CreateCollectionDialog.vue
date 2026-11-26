@@ -6,8 +6,10 @@
     data-testid="recipe-book-create-collection-dialog"
     @close="$emit('close')"
   >
-    <form class="mt-4" novalidate @submit.prevent="create">
-      <label for="collection-name" class="text-xs font-semibold">Collection name</label>
+    <form class="mt-5" novalidate @submit.prevent="create">
+      <label for="collection-name" class="block px-1 text-xs font-medium text-ink-soft"
+        >Collection name</label
+      >
       <input
         id="collection-name"
         v-model="name"
@@ -18,13 +20,13 @@
         maxlength="40"
         :aria-invalid="Boolean(error)"
         aria-describedby="collection-name-hint"
-        class="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-neutral-800 focus:ring-1 focus:ring-neutral-800"
-        :class="error ? 'border-neutral-800' : 'border-neutral-300'"
+        class="mt-1.5 h-12 w-full rounded-2xl bg-surface px-3.5 text-ink ring-1 outline-none placeholder:text-muted focus:ring-2 focus:ring-ink"
+        :class="error ? 'ring-status-today' : 'ring-hairline'"
       />
       <p
         id="collection-name-hint"
-        class="mt-1 text-xs"
-        :class="error ? 'font-semibold text-neutral-900' : 'text-neutral-500'"
+        class="mt-1.5 px-1 text-xs"
+        :class="error ? 'font-semibold text-status-today' : 'text-muted'"
         :role="error ? 'alert' : undefined"
       >
         {{ error || 'You can add recipes to this collection later.' }}

@@ -1,7 +1,7 @@
 <template>
   <button
     :type="type"
-    class="rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+    class="inline-flex items-center justify-center gap-2 pressable rounded-full px-5 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-45"
     :class="VARIANTS[variant]"
   >
     <slot />
@@ -15,8 +15,8 @@ defineProps({
 })
 
 const VARIANTS = {
-  primary: 'bg-neutral-800 text-white hover:bg-neutral-700',
-  secondary: 'border border-neutral-800 bg-white text-neutral-800 hover:bg-neutral-100',
-  ghost: 'text-neutral-900 hover:bg-neutral-100',
+  primary: 'bg-ink text-white shadow-[0_10px_24px_-12px_rgb(0_0_0/0.6)] hover:bg-ink-soft',
+  secondary: 'bg-surface text-ink ring-1 ring-hairline hover:ring-ink/30',
+  ghost: 'text-ink hover:bg-ink/5',
 }
 </script>

@@ -1,7 +1,7 @@
-<!-- Mobile navigation bar (mobile-first layout). -->
+<!-- Mobile navigation bar: floating frosted pill (mobile-first layout). -->
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-10 grid grid-cols-4 gap-1 border-t border-neutral-300 bg-white p-2 md:hidden"
+    class="glass fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex items-center gap-1 rounded-full p-1.5 md:hidden"
     aria-label="Main"
   >
     <NavItem v-for="item in NAV_ITEMS" :key="item.label" :item="item" compact />
